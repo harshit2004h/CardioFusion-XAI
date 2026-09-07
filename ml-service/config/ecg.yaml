@@ -1,0 +1,429 @@
+# ============================================================
+# CardioFusion-XAI
+# ECG Configuration
+# ============================================================
+
+
+# ============================================================
+# MODALITY
+# ============================================================
+
+modality:
+
+  name: "ecg"
+
+  enabled: true
+
+  type: "timeseries"
+
+
+# ============================================================
+# DATASET
+# ============================================================
+
+dataset:
+
+  name: "PTB-XL"
+
+  id: "ptbxl"
+
+  root: "./data/raw/ptbxl"
+
+
+  # ----------------------------------------------------------
+  # PTB-XL FILES
+  # ----------------------------------------------------------
+
+  database_file: "ptbxl_database.csv"
+
+  scp_statements_file: "scp_statements.csv"
+
+
+  # ----------------------------------------------------------
+  # SIGNAL STORAGE
+  # ----------------------------------------------------------
+
+  records_directory: "records100"
+
+
+  # ----------------------------------------------------------
+  # SAMPLING
+  # ----------------------------------------------------------
+
+  original_sampling_rate: 100
+
+  target_sampling_rate: 100
+
+
+  # ----------------------------------------------------------
+  # LEADS
+  # ----------------------------------------------------------
+
+  num_leads: 12
+
+  lead_names:
+    - "I"
+    - "II"
+    - "III"
+    - "aVR"
+    - "aVL"
+    - "aVF"
+    - "V1"
+    - "V2"
+    - "V3"
+    - "V4"
+    - "V5"
+    - "V6"
+
+
+# ============================================================
+# SIGNAL PREPROCESSING
+# ============================================================
+
+preprocessing:
+
+  enabled: true
+
+
+  # ----------------------------------------------------------
+  # Baseline correction
+  # ----------------------------------------------------------
+
+  baseline_correction:
+
+    enabled: true
+
+    method: "highpass"
+
+
+  # ----------------------------------------------------------
+  # Filtering
+  # ----------------------------------------------------------
+
+  filtering:
+
+    enabled: true
+
+    method: "butterworth"
+
+    order: 4
+
+    lowcut: 0.5
+
+    highcut: 40.0
+
+
+  # ----------------------------------------------------------
+  # Notch filter
+  # ----------------------------------------------------------
+
+  notch_filter:
+
+    enabled: true
+
+    frequency: 50.0
+
+    quality_factor: 30.0
+
+
+  # ----------------------------------------------------------
+  # Normalization
+  # ----------------------------------------------------------
+
+  normalization:
+
+    enabled: true
+
+    method: "zscore"
+
+    per_lead: true
+
+
+  # ----------------------------------------------------------
+  # Resampling
+  # ----------------------------------------------------------
+
+  resampling:
+
+    enabled: false
+
+    target_frequency: 100
+
+
+# ============================================================
+# DISCRETE WAVELET TRANSFORM
+# ============================================================
+
+dwt:
+
+  enabled: true
+
+  wavelet: "db4"
+
+  level: 4
+
+  mode: "symmetric"
+
+
+# ============================================================
+# SEGMENTATION
+# ============================================================
+
+segmentation:
+
+  enabled: true
+
+  duration_seconds: 10
+
+  overlap: 0.0
+
+
+# ============================================================
+# DATA AUGMENTATION
+# ============================================================
+
+augmentation:
+
+  enabled: true
+
+
+  gaussian_noise:
+
+    enabled: true
+
+    probability: 0.3
+
+    standard_deviation: 0.01
+
+
+  amplitude_scaling:
+
+    enabled: true
+
+    probability: 0.3
+
+    min_scale: 0.9
+
+    max_scale: 1.1
+
+
+  time_shift:
+
+    enabled: true
+
+    probability: 0.2
+
+    max_shift_seconds: 0.2
+
+
+  lead_dropout:
+
+    enabled: true
+
+    probability: 0.1
+
+    max_dropped_leads: 2
+
+
+# ============================================================
+# DATASET SPLIT
+# ============================================================
+
+split:
+
+  strategy: "official"
+
+  train: true
+
+  validation: true
+
+  test: true
+
+
+# ============================================================
+# DATALOADER
+# ============================================================
+
+dataloader:
+
+  batch_size: 32
+
+  num_workers: 4
+
+  pin_memory: true
+
+  persistent_workers: true
+
+  shuffle_train: true
+
+
+# ============================================================
+# ECG MODEL
+# ============================================================
+
+model:
+
+  name: "ECGTransformer"
+
+  architecture: "cnn_transformer"
+
+
+  # ----------------------------------------------------------
+  # Input
+  # ----------------------------------------------------------
+
+  input:
+
+    num_leads: 12
+
+    sequence_length: 1000
+
+
+  # ----------------------------------------------------------
+  # CNN feature extractor
+  # ----------------------------------------------------------
+
+  cnn:
+
+    enabled: true
+
+    channels:
+
+      - 64
+      - 128
+      - 256
+
+    kernel_sizes:
+
+      - 7
+      - 5
+      - 3
+
+    strides:
+
+      - 2
+      - 2
+      - 2
+
+    dropout: 0.1
+
+
+  # ----------------------------------------------------------
+  # Transformer
+  # ----------------------------------------------------------
+
+  transformer:
+
+    enabled: true
+
+    embedding_dim: 256
+
+    num_heads: 8
+
+    num_layers: 4
+
+    feedforward_dim: 1024
+
+    dropout: 0.1
+
+    activation: "gelu"
+
+
+  # ----------------------------------------------------------
+  # Projection
+  # ----------------------------------------------------------
+
+  projection:
+
+    input_dim: 256
+
+    output_dim: 512
+
+    dropout: 0.1
+
+
+# ============================================================
+# CLASSIFICATION
+# ============================================================
+
+classification:
+
+  task_type: "multilabel"
+
+
+  # Number of classes should be determined from the dataset
+  # during dataset preparation.
+
+  num_classes: null
+
+
+  loss:
+
+    name: "BCEWithLogitsLoss"
+
+    pos_weight: "auto"
+
+
+# ============================================================
+# ECG EMBEDDING
+# ============================================================
+
+embedding:
+
+  enabled: true
+
+  dimension: 512
+
+  normalize: true
+
+
+# ============================================================
+# TRAINING
+# ============================================================
+
+training:
+
+  batch_size: 32
+
+  epochs: 50
+
+  learning_rate: 0.0001
+
+  weight_decay: 0.0001
+
+  gradient_clip_norm: 1.0
+
+
+# ============================================================
+# EVALUATION
+# ============================================================
+
+evaluation:
+
+  threshold: 0.5
+
+  metrics:
+
+    - "accuracy"
+    - "precision"
+    - "recall"
+    - "f1"
+    - "auroc"
+    - "auprc"
+    - "sensitivity"
+    - "specificity"
+
+
+# ============================================================
+# CHECKPOINT
+# ============================================================
+
+checkpoint:
+
+  directory: "./checkpoints/ecg"
+
+  filename: "best_ecg_model.pt"
+
+  monitor: "val_auroc"
+
+  mode: "max"
