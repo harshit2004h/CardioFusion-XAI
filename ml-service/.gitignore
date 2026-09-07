@@ -1,0 +1,321 @@
+venv-cardio
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+
+*.so
+*.pyd
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Coverage
+.coverage
+.coverage.*
+htmlcov/
+
+# Pytest
+.pytest_cache/
+
+# MyPy
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+
+# ============================================================
+# VIRTUAL ENVIRONMENTS
+# ============================================================
+
+venv-cardio/
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+
+# ============================================================
+# ENVIRONMENT VARIABLES / SECRETS
+# ============================================================
+
+.env
+.env.*
+!.env.example
+
+# Local configuration files
+config/local.yaml
+config/local.yml
+config/*.local.yaml
+config/*.local.yml
+
+
+# ============================================================
+# DATASETS
+#
+# Medical datasets can be extremely large and may have
+# licensing/access restrictions.
+#
+# Raw and processed datasets should NOT be committed to Git.
+# ============================================================
+
+data/raw/
+data/interim/
+data/processed/
+
+# Dataset archives
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.rar
+
+# Large data files
+*.csv
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.mat
+*.npy
+*.npz
+
+# Medical imaging
+*.dcm
+*.nii
+*.nii.gz
+*.mha
+*.mhd
+
+# ECG files
+*.hea
+*.dat
+
+
+# ============================================================
+# MODEL CHECKPOINTS
+# ============================================================
+
+checkpoints/
+
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.engine
+*.trt
+
+
+# ============================================================
+# MODEL OUTPUTS
+# ============================================================
+
+outputs/
+
+# Predictions
+predictions/
+
+# Generated embeddings
+embeddings/
+
+# Feature caches
+features/
+
+# Temporary model files
+*.model
+*.weights
+
+
+# ============================================================
+# EXPERIMENTS
+# ============================================================
+
+experiments/*/outputs/
+experiments/*/checkpoints/
+experiments/*/logs/
+
+# Keep experiment configuration/templates if desired
+# but ignore generated results.
+
+
+# ============================================================
+# WEIGHTS & BIASES
+# ============================================================
+
+wandb/
+
+
+# ============================================================
+# LOGS
+# ============================================================
+
+logs/
+
+*.log
+*.log.*
+log/
+
+
+# ============================================================
+# JUPYTER
+# ============================================================
+
+.ipynb_checkpoints/
+
+# Jupyter temporary files
+*.ipynb_checkpoints
+
+
+# ============================================================
+# IDE - VISUAL STUDIO CODE
+# ============================================================
+
+.vscode/
+
+# Uncomment these if you want to share selected VS Code
+# configuration files with the repository:
+#
+# !.vscode/settings.json
+# !.vscode/extensions.json
+
+
+# ============================================================
+# OTHER IDEs
+# ============================================================
+
+.idea/
+*.iml
+
+
+# ============================================================
+# OPERATING SYSTEM
+# ============================================================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+
+# ============================================================
+# TEMPORARY FILES
+# ============================================================
+
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+
+# ============================================================
+# CUDA / NVIDIA PROFILING
+# ============================================================
+
+*.nsys-rep
+*.qdrep
+*.sqlite
+
+
+# ============================================================
+# GENERATED VISUALIZATIONS
+# ============================================================
+
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+
+# NOTE:
+# If you later need to version-control specific figures,
+# explicitly un-ignore them.
+
+
+# ============================================================
+# GENERATED REPORTS
+# ============================================================
+
+*.html
+*.pdf
+
+
+# ============================================================
+# SECRETS / CREDENTIALS
+# ============================================================
+
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+credentials.json
+service-account.json
+secrets.json
+
+
+# ============================================================
+# LOCAL DATABASES
+# ============================================================
+
+*.db
+*.sqlite
+*.sqlite3
+
+
+# ============================================================
+# TEMPORARY MACHINE-LEARNING FILES
+# ============================================================
+
+*.cache
+*.lock
+
+
+# ============================================================
+# MAC / LINUX
+# ============================================================
+
+.Trashes
+.fuse_hidden*
+.nfs*
+
+
+# ============================================================
+# WINDOWS
+# ============================================================
+
+$RECYCLE.BIN/
+*.lnk
+
+
+# ============================================================
+# LOCAL EXPERIMENT CONFIGURATION
+# ============================================================
+
+config/local/
+config/private/
+
+
+# ============================================================
+# MODAL LOCAL FILES
+# ============================================================
+
+.modal/
+
+
+# ============================================================
+# MISCELLANEOUS LARGE FILES
+# ============================================================
+
+*.bin
+*.dat
+*.raw
