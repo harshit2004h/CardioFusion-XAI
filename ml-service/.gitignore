@@ -1,39 +1,36 @@
-venv-cardio
+# ============================================================
+# Cardio Fusion XAI - ML Service
+# ============================================================
+
+
+
+# Python
+
 
 __pycache__/
 *.py[cod]
 *$py.class
 
-
-*.so
+*.pyo
 *.pyd
 
-# Python packaging
+.python-version
+
 build/
 dist/
 *.egg-info/
 .eggs/
 
-# Coverage
-.coverage
-.coverage.*
-htmlcov/
+pip-wheel-metadata/
 
-# Pytest
-.pytest_cache/
-
-# MyPy
-.mypy_cache/
-
-# Ruff
-.ruff_cache/
+MANIFEST
+MANIFEST.in
 
 
-# ============================================================
-# VIRTUAL ENVIRONMENTS
-# ============================================================
 
-venv-cardio/
+# Virtual Environments
+
+
 .venv/
 venv/
 env/
@@ -42,280 +39,329 @@ env.bak/
 venv.bak/
 
 
-# ============================================================
-# ENVIRONMENT VARIABLES / SECRETS
-# ============================================================
+
+# Environment / Secrets
+
 
 .env
 .env.*
 !.env.example
 
-# Local configuration files
-config/local.yaml
-config/local.yml
-config/*.local.yaml
-config/*.local.yml
+*.secret
+*.secrets
+
+secrets/
+credentials/
+keys/
 
 
-# ============================================================
-# DATASETS
-#
-# Medical datasets can be extremely large and may have
-# licensing/access restrictions.
-#
-# Raw and processed datasets should NOT be committed to Git.
-# ============================================================
 
+# Jupyter
+
+
+.ipynb_checkpoints/
+
+*.ipynb_checkpoints/
+.venv-cardio/
+
+
+# IDE
+
+
+.vscode/
+.idea/
+*.iml
+
+*.swp
+*.swo
+
+.DS_Store
+Thumbs.db
+
+
+
+# Logs
+
+
+*.log
+logs/
+log/
+
+
+
+# ML Datasets
+
+
+# Raw datasets
 data/raw/
+
+# Intermediate datasets
 data/interim/
+
+# Processed datasets
 data/processed/
 
-# Dataset archives
-*.zip
-*.tar
-*.tar.gz
-*.7z
-*.rar
+# Temporary data
+data/tmp/
+data/cache/
 
-# Large data files
-*.csv
-*.parquet
-*.feather
-*.h5
-*.hdf5
-*.mat
-*.npy
-*.npz
 
-# Medical imaging
-*.dcm
-*.nii
-*.nii.gz
-*.mha
-*.mhd
 
-# ECG files
+# Large Medical Files
+
+
+# ECG / WFDB
 *.hea
 *.dat
+*.atr
+*.ecg
 
+# Medical / signal formats
+*.edf
+*.mat
 
-# ============================================================
-# MODEL CHECKPOINTS
-# ============================================================
+# Echo / video
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
 
-checkpoints/
-
+# Large tensors
 *.pt
 *.pth
 *.ckpt
 *.safetensors
 *.onnx
-*.engine
-*.trt
 
 
-# ============================================================
-# MODEL OUTPUTS
-# ============================================================
 
-outputs/
-
-# Predictions
-predictions/
-
-# Generated embeddings
-embeddings/
-
-# Feature caches
-features/
-
-# Temporary model files
-*.model
-*.weights
+# Model Checkpoints
 
 
-# ============================================================
-# EXPERIMENTS
-# ============================================================
+checkpoints/
 
-experiments/*/outputs/
-experiments/*/checkpoints/
-experiments/*/logs/
-
-# Keep experiment configuration/templates if desired
-# but ignore generated results.
+# Keep directory placeholders if desired:
+# !checkpoints/.gitkeep
 
 
-# ============================================================
-# WEIGHTS & BIASES
-# ============================================================
 
+# Generated ML Artifacts
+
+
+artifacts/
+runs/
 wandb/
+mlruns/
+
+tensorboard/
+lightning_logs/
 
 
-# ============================================================
-# LOGS
-# ============================================================
 
-logs/
-
-*.log
-*.log.*
-log/
+# Experiment Outputs
 
 
-# ============================================================
-# JUPYTER
-# ============================================================
+*.csv
+*.parquet
+*.feather
+*.pkl
+*.pickle
 
-.ipynb_checkpoints/
-
-# Jupyter temporary files
-*.ipynb_checkpoints
-
-
-# ============================================================
-# IDE - VISUAL STUDIO CODE
-# ============================================================
-
-.vscode/
-
-# Uncomment these if you want to share selected VS Code
-# configuration files with the repository:
+# Uncomment the following if you want to version specific
+# small CSV configuration files.
 #
-# !.vscode/settings.json
-# !.vscode/extensions.json
+# !config/**/*.csv
 
 
-# ============================================================
-# OTHER IDEs
-# ============================================================
 
-.idea/
-*.iml
+# Cached Python / Libraries
 
 
-# ============================================================
-# OPERATING SYSTEM
-# ============================================================
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-.DS_Store
-Thumbs.db
-desktop.ini
+.hypothesis/
+
+.pytype/
 
 
-# ============================================================
-# TEMPORARY FILES
-# ============================================================
 
+# Coverage
+
+
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+coverage.html
+
+
+
+# Profiling
+
+
+.prof
+.profraw
+
+
+
+# Temporary Files
+
+
+tmp/
+temp/
 *.tmp
 *.temp
+
 *.bak
-*.swp
-*.swo
-*~
+*.backup
+
+*.orig
 
 
-# ============================================================
-# CUDA / NVIDIA PROFILING
-# ============================================================
 
-*.nsys-rep
-*.qdrep
-*.sqlite
+# OS Files
 
 
-# ============================================================
-# GENERATED VISUALIZATIONS
-# ============================================================
+.DS_Store
+.AppleDouble
+.LSOverride
 
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.svg
+Icon
 
-# NOTE:
-# If you later need to version-control specific figures,
-# explicitly un-ignore them.
+._*
 
+.Spotlight-V100
+.Trashes
 
-# ============================================================
-# GENERATED REPORTS
-# ============================================================
-
-*.html
-*.pdf
+ehthumbs.db
+ehthumbs_vista.db
 
 
-# ============================================================
-# SECRETS / CREDENTIALS
-# ============================================================
+
+# Windows
+
+
+$RECYCLE.BIN/
+Desktop.ini
+
+*.lnk
+
+
+
+# Linux
+
+
+.directory
+
+
+
+# CUDA / NVIDIA Cache
+
+
+.nv/
+cuda_cache/
+
+# PyTorch compilation/cache
+torch_extensions/
+
+
+
+# Ruff / Black / Formatting Cache
+
+
+.ruff_cache/
+.black_cache/
+
+
+
+# Local Model Exports
+
+
+exports/
+model_exports/
+
+# Large binaries
+*.bin
+
+
+
+# Generated Reports
+
+
+reports/generated/
+reports/output/
+
+# PDF files generated by experiments
+artifacts/**/*.pdf
+
+
+
+# Local Notebook Outputs
+
+
+notebooks/output/
+notebooks/generated/
+
+
+
+# Hugging Face / Transformers Cache
+
+
+# The project does NOT use a Hugging Face dataset,
+# but this prevents accidental cache commits.
+.huggingface/
+transformers_cache/
+
+# Common HF cache location if configured locally
+.cache/huggingface/
+
+
+
+# Weights & Biases
+
+
+wandb/
+.wandb/
+
+
+
+# Secrets / Cloud Credentials
+
 
 *.pem
 *.key
 *.crt
-*.p12
-*.pfx
 
-credentials.json
+gcp-key.json
 service-account.json
-secrets.json
+
+aws-credentials*
+azure-credentials*
 
 
-# ============================================================
-# LOCAL DATABASES
-# ============================================================
+
+# Docker
+
+
+.docker/
+docker-data/
+
+
+
+# Local Database Files
+
 
 *.db
 *.sqlite
 *.sqlite3
 
 
-# ============================================================
-# TEMPORARY MACHINE-LEARNING FILES
-# ============================================================
 
-*.cache
-*.lock
+# Mac / Windows temporary office files
 
 
-# ============================================================
-# MAC / LINUX
-# ============================================================
-
-.Trashes
-.fuse_hidden*
-.nfs*
-
-
-# ============================================================
-# WINDOWS
-# ============================================================
-
-$RECYCLE.BIN/
-*.lnk
-
-
-# ============================================================
-# LOCAL EXPERIMENT CONFIGURATION
-# ============================================================
-
-config/local/
-config/private/
-
-
-# ============================================================
-# MODAL LOCAL FILES
-# ============================================================
-
-.modal/
-
-
-# ============================================================
-# MISCELLANEOUS LARGE FILES
-# ============================================================
-
-*.bin
-*.dat
-*.raw
+~$*

@@ -3,221 +3,331 @@ ml-service/
 ├── README.md
 ├── requirements.txt
 ├── pyproject.toml
+├── Dockerfile
+├── .dockerignore
 ├── .gitignore
-├── .env.example
 │
 ├── config/
 │   ├── base.yaml
-│   ├── ecg.yaml
-│   ├── echo.yaml
-│   ├── biomarkers.yaml
-│   └── ccta.yaml
+│   │
+│   ├── datasets/
+│   │   ├── zheen.yaml
+│   │   ├── uci_heart_failure.yaml
+│   │   ├── mi_complications.yaml
+│   │   ├── framingham.yaml
+│   │   ├── ptbxl.yaml
+│   │   └── echonet.yaml
+│   │
+│   ├── models/
+│   │   ├── biomarkers.yaml
+│   │   ├── ecg.yaml
+│   │   └── echo.yaml
+│   │
+│   ├── training/
+│   │   ├── biomarkers.yaml
+│   │   ├── ecg.yaml
+│   │   └── echo.yaml
+│   │
+│   ├── calibration.yaml
+│   ├── disease_registry.yaml
+│   └── label_taxonomy.yaml
 │
 ├── data/
 │   ├── raw/
-│   │   ├── ptbxl/
-│   │   │   ├── ptbxl_database.csv
-│   │   │   ├── scp_statements.csv
-│   │   │   ├── records100/
-│   │   │   └── records500/
-│   │   │
-│   │   ├── echonet/
-│   │   │   ├── FileList.csv
-│   │   │   ├── VolumeTracings.csv
-│   │   │   └── Videos/
-│   │   │
 │   │   ├── biomarkers/
 │   │   │   ├── zheen/
-│   │   │   └── uci_heart_failure/
+│   │   │   ├── uci_heart_failure/
+│   │   │   ├── mi_complications/
+│   │   │   └── framingham/
 │   │   │
-│   │   └── imagecas/
+│   │   ├── ecg/
+│   │   │   └── ptbxl/
+│   │   │
+│   │   └── echo/
+│   │       └── echonet/
 │   │
 │   ├── interim/
+│   │   ├── biomarkers/
+│   │   ├── ecg/
+│   │   └── echo/
+│   │
 │   └── processed/
+│       ├── biomarkers/
+│       │   ├── zheen/
+│       │   ├── uci_heart_failure/
+│       │   ├── mi_complications/
+│       │   └── framingham/
+│       │
+│       ├── ecg/
+│       │   └── ptbxl/
+│       │
+│       └── echo/
+│           └── echonet/
 │
 ├── checkpoints/
-│   ├── ecg/
-│   │   ├── best.pt
-│   │   ├── last.pt
-│   │   └── metadata.json
-│   │
-│   ├── echo/
-│   │   ├── best.pt
-│   │   ├── last.pt
-│   │   └── metadata.json
-│   │
 │   ├── biomarkers/
 │   │   ├── zheen/
-│   │   │   ├── best.pt
-│   │   │   ├── last.pt
-│   │   │   └── metadata.json
-│   │   │
-│   │   └── uci_heart_failure/
-│   │       ├── best.pt
-│   │       ├── last.pt
-│   │       └── metadata.json
+│   │   ├── uci_heart_failure/
+│   │   ├── mi_complications/
+│   │   └── framingham/
 │   │
-│   └── fusion/
-│       ├── best.pt
-│       ├── last.pt
-│       └── metadata.json
+│   ├── ecg/
+│   │   └── ptbxl/
+│   │
+│   ├── echo/
+│   │   └── echonet/
+│   │
+│   └── calibration/
+│       ├── biomarkers/
+│       ├── ecg/
+│       └── echo/
+│
+├── artifacts/
+│   ├── metrics/
+│   ├── plots/
+│   ├── roc_curves/
+│   ├── pr_curves/
+│   ├── confusion_matrices/
+│   ├── calibration/
+│   └── xai/
+│
+├── notebooks/
+│   ├── 01_eda/
+│   │   ├── zheen.ipynb
+│   │   ├── uci_heart_failure.ipynb
+│   │   ├── mi_complications.ipynb
+│   │   ├── framingham.ipynb
+│   │   ├── ptbxl.ipynb
+│   │   └── echonet.ipynb
+│   │
+│   ├── 02_preprocessing/
+│   │   ├── biomarkers.ipynb
+│   │   ├── ptbxl.ipynb
+│   │   └── echonet.ipynb
+│   │
+│   ├── 03_training/
+│   │   ├── biomarkers.ipynb
+│   │   ├── ptbxl.ipynb
+│   │   └── echonet.ipynb
+│   │
+│   ├── 04_evaluation/
+│   │   ├── biomarkers.ipynb
+│   │   ├── ptbxl.ipynb
+│   │   └── echonet.ipynb
+│   │
+│   └── 05_fusion/
+│       ├── calibration.ipynb
+│       ├── staged_inference.ipynb
+│       └── fusion_evaluation.ipynb
+│
+├── scripts/
+│   ├── download_datasets.py
+│   ├── verify_datasets.py
+│   ├── prepare_biomarkers.py
+│   ├── prepare_ptbxl.py
+│   ├── prepare_echonet.py
+│   ├── train_biomarkers.py
+│   ├── train_ecg.py
+│   ├── train_echo.py
+│   ├── calibrate_models.py
+│   ├── evaluate_models.py
+│   └── export_checkpoints.py
 │
 ├── src/
-│   ├── __init__.py
 │   │
-│   ├── utils/
-│   │   ├── __init__.py
-│   │   ├── config.py
-│   │   ├── seed.py
-│   │   ├── device.py
-│   │   ├── logger.py
-│   │   ├── paths.py
-│   │   └── metadata.py
+│   ├── __init__.py
 │   │
 │   ├── ingestion/
 │   │   ├── __init__.py
+│   │   ├── biomarker_reader.py
 │   │   ├── ecg_reader.py
-│   │   ├── echo_reader.py
-│   │   └── biomarker_reader.py
+│   │   └── echo_reader.py
+│   │
+│   ├── validation/
+│   │   ├── __init__.py
+│   │   ├── input_validator.py
+│   │   ├── biomarker_validator.py
+│   │   ├── ecg_validator.py
+│   │   └── echo_validator.py
+│   │
+│   ├── label_harmonization/
+│   │   ├── __init__.py
+│   │   ├── disease_taxonomy.py
+│   │   ├── biomarker_label_map.py
+│   │   └── ecg_label_map.py
 │   │
 │   ├── preprocessing/
 │   │   ├── __init__.py
-│   │   ├── ecg_preprocess.py
-│   │   ├── echo_preprocess.py
-│   │   └── biomarker_preprocess.py
+│   │   │
+│   │   ├── biomarkers/
+│   │   │   ├── __init__.py
+│   │   │   ├── cleaning.py
+│   │   │   ├── imputation.py
+│   │   │   ├── encoding.py
+│   │   │   ├── scaling.py
+│   │   │   ├── feature_selection.py
+│   │   │   └── leakage_guard.py
+│   │   │
+│   │   ├── ecg/
+│   │   │   ├── __init__.py
+│   │   │   ├── resample.py
+│   │   │   ├── filtering.py
+│   │   │   ├── normalization.py
+│   │   │   └── augmentation.py
+│   │   │
+│   │   └── echo/
+│   │       ├── __init__.py
+│   │       ├── clip_sampling.py
+│   │       ├── resize.py
+│   │       ├── normalization.py
+│   │       └── augmentation.py
 │   │
 │   ├── datasets/
 │   │   ├── __init__.py
-│   │   ├── ecg_dataset.py
-│   │   ├── echo_dataset.py
 │   │   ├── biomarker_dataset.py
-│   │   └── fusion_dataset.py
+│   │   ├── ecg_dataset.py
+│   │   └── echo_dataset.py
 │   │
 │   ├── models/
 │   │   ├── __init__.py
 │   │   │
+│   │   ├── biomarkers/
+│   │   │   ├── __init__.py
+│   │   │   ├── input_adapters.py
+│   │   │   ├── ft_transformer.py
+│   │   │   ├── residual_mlp.py
+│   │   │   └── multitask_heads.py
+│   │   │
 │   │   ├── ecg/
 │   │   │   ├── __init__.py
-│   │   │   ├── cnn.py
-│   │   │   ├── transformer.py
-│   │   │   ├── dwt.py
-│   │   │   └── model.py
+│   │   │   ├── xresnet1d.py
+│   │   │   └── multitask_heads.py
 │   │   │
 │   │   ├── echo/
 │   │   │   ├── __init__.py
-│   │   │   ├── frame_cnn.py
-│   │   │   ├── temporal_transformer.py
-│   │   │   └── model.py
+│   │   │   ├── r2plus1d.py
+│   │   │   └── regression_heads.py
 │   │   │
-│   │   ├── biomarkers/
-│   │   │   ├── __init__.py
-│   │   │   ├── mlp.py
-│   │   │   └── model.py
-│   │   │
-│   │   └── fusion/
+│   │   └── common/
 │   │       ├── __init__.py
-│   │       ├── attention.py
-│   │       ├── weighting.py
-│   │       ├── fusion.py
+│   │       ├── mlp.py
+│   │       ├── normalization.py
 │   │       └── heads.py
+│   │
+│   ├── losses/
+│   │   ├── __init__.py
+│   │   ├── masked_multitask_loss.py
+│   │   ├── weighted_bce.py
+│   │   ├── focal_loss.py
+│   │   ├── weighted_cross_entropy.py
+│   │   └── regression_loss.py
 │   │
 │   ├── training/
 │   │   ├── __init__.py
-│   │   ├── common.py
+│   │   ├── trainer.py
+│   │   ├── train_biomarkers.py
 │   │   ├── train_ecg.py
 │   │   ├── train_echo.py
-│   │   ├── train_biomarkers.py
-│   │   └── train_fusion.py
+│   │   ├── early_stopping.py
+│   │   └── scheduler.py
 │   │
 │   ├── evaluation/
 │   │   ├── __init__.py
-│   │   ├── classification_metrics.py
+│   │   ├── evaluator.py
+│   │   ├── binary_metrics.py
+│   │   ├── multilabel_metrics.py
 │   │   ├── regression_metrics.py
-│   │   └── evaluator.py
+│   │   ├── per_disease_metrics.py
+│   │   └── calibration_metrics.py
 │   │
-│   ├── inference/
+│   ├── calibration/
 │   │   ├── __init__.py
-│   │   ├── ecg_inference.py
-│   │   ├── echo_inference.py
-│   │   ├── biomarker_inference.py
-│   │   └── fusion_inference.py
+│   │   ├── calibrator.py
+│   │   ├── temperature_scaling.py
+│   │   └── platt_scaling.py
 │   │
 │   ├── fusion/
 │   │   ├── __init__.py
-│   │   ├── availability_mask.py
-│   │   └── quality_weighting.py
+│   │   ├── staged_fusion.py
+│   │   ├── evidence_fusion.py
+│   │   ├── disagreement_handler.py
+│   │   └── modality_state.py
 │   │
 │   ├── xai/
 │   │   ├── __init__.py
-│   │   ├── ecg_xai.py
-│   │   ├── echo_xai.py
-│   │   └── biomarker_xai.py
+│   │   │
+│   │   ├── biomarkers/
+│   │   │   ├── shap_explainer.py
+│   │   │   └── feature_importance.py
+│   │   │
+│   │   ├── ecg/
+│   │   │   ├── saliency.py
+│   │   │   └── gradcam.py
+│   │   │
+│   │   └── echo/
+│   │       ├── ef_explanation.py
+│   │       └── segmentation_overlay.py
 │   │
-│   └── registry/
+│   ├── inference/
+│   │   ├── __init__.py
+│   │   ├── predictor.py
+│   │   ├── biomarker_predictor.py
+│   │   ├── ecg_predictor.py
+│   │   ├── echo_predictor.py
+│   │   ├── modality_manager.py
+│   │   ├── disease_engine.py
+│   │   ├── confidence.py
+│   │   ├── evidence.py
+│   │   ├── recommendations.py
+│   │   ├── explanation.py
+│   │   └── result_formatter.py
+│   │
+│   └── utils/
 │       ├── __init__.py
-│       └── model_registry.py
+│       ├── config.py
+│       ├── logging.py
+│       ├── seed.py
+│       ├── device.py
+│       ├── checkpoint.py
+│       └── reproducibility.py
 │
-├── modal/
+├── api/
 │   ├── __init__.py
-│   ├── train_ecg.py
-│   ├── train_echo.py
-│   ├── train_biomarkers.py
-│   └── train_fusion.py
-│
-├── experiments/
-│   ├── ecg/
-│   │   ├── cnn/
-│   │   ├── cnn_transformer/
-│   │   └── dwt_cnn_transformer/
+│   ├── main.py
+│   ├── dependencies.py
 │   │
-│   ├── echo/
-│   │   ├── frame_cnn/
-│   │   └── cnn_temporal_transformer/
+│   ├── routes/
+│   │   ├── health.py
+│   │   ├── biomarkers.py
+│   │   ├── ecg.py
+│   │   ├── echo.py
+│   │   └── predict.py
 │   │
-│   ├── biomarkers/
-│   │   ├── mi/
-│   │   └── heart_failure/
-│   │
-│   ├── fusion/
-│   │   └── multimodal/
-│   │
-│   └── ccta/
+│   └── schemas/
+│       ├── common.py
+│       ├── biomarkers.py
+│       ├── ecg.py
+│       ├── echo.py
+│       └── prediction.py
 │
-├── tests/
-│   ├── __init__.py
-│   ├── test_config.py
-│   ├── test_device.py
-│   ├── test_ecg_preprocessing.py
-│   ├── test_ecg_model.py
-│   ├── test_echo_preprocessing.py
-│   ├── test_echo_model.py
-│   ├── test_biomarker_preprocessing.py
-│   ├── test_biomarker_model.py
-│   ├── test_fusion.py
-│   ├── test_inference.py
-│   └── test_ccta_disabled.py
-│
-├── notebooks/
-│   ├── 01_ecg_exploration.ipynb
-│   ├── 02_echo_exploration.ipynb
-│   ├── 03_biomarker_exploration.ipynb
-│   └── 04_fusion_exploration.ipynb
-│
-└── outputs/
-    ├── predictions/
-    │   ├── ecg/
-    │   ├── echo/
-    │   ├── biomarkers/
-    │   └── fusion/
+└── tests/
+    ├── __init__.py
     │
-    ├── visualizations/
-    │   ├── ecg/
-    │   ├── echo/
-    │   └── fusion/
+    ├── unit/
+    │   ├── test_preprocessing.py
+    │   ├── test_label_harmonization.py
+    │   ├── test_losses.py
+    │   ├── test_disease_engine.py
+    │   ├── test_confidence.py
+    │   └── test_fusion.py
     │
-    ├── explanations/
-    │   ├── ecg/
-    │   ├── echo/
-    │   └── biomarkers/
+    ├── integration/
+    │   ├── test_biomarker_pipeline.py
+    │   ├── test_ecg_pipeline.py
+    │   ├── test_echo_pipeline.py
+    │   └── test_full_inference.py
     │
-    └── logs/
+    └── fixtures/
+        ├── sample_blood.json
+        ├── sample_ecg/
+        └── sample_echo/

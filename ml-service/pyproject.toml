@@ -7,156 +7,165 @@ build-backend = "setuptools.build_meta"
 
 
 [project]
-name = "cardiofusion-xai-ml"
+name = "cardio-fusion-xai-ml"
 version = "0.1.0"
-
-description = "Multimodal cardiovascular AI and explainable machine learning service for CardioFusion-XAI"
-
+description = "PyTorch-based multimodal cardiovascular disease detection and risk assessment ML service."
 readme = "README.md"
-
-requires-python = ">=3.12,<3.13"
-
-license = { text = "Research and Educational Use" }
+requires-python = ">=3.10,<3.14"
+license = { text = "MIT" }
 
 authors = [
-    { name = "CardioFusion-XAI Team" }
+    { name = "Cardio Fusion XAI Team" }
 ]
 
 keywords = [
     "cardiovascular",
+    "heart-disease",
     "machine-learning",
     "deep-learning",
     "pytorch",
+    "multimodal",
     "ecg",
     "echocardiography",
     "biomarkers",
-    "multimodal-ai",
-    "explainable-ai"
+    "xai"
 ]
 
-
-# ------------------------------------------------------------
-# Runtime dependencies
-#
-# PyTorch is intentionally NOT listed here.
-#
-# PyTorch is installed separately using the CUDA-specific
-# PyTorch wheel required by the NVIDIA GPU environment.
-# ------------------------------------------------------------
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
 
 dependencies = [
-    "numpy>=1.26,<3",
-    "pandas>=2.2,<3",
-    "scipy>=1.13,<2",
-    "scikit-learn>=1.5,<2",
+    "torch>=2.4,<3.0",
+    "torchvision>=0.19,<1.0",
+    "torchaudio>=2.4,<3.0",
 
-    "PyWavelets>=1.6,<2",
-    "wfdb>=4.2,<5",
+    "numpy>=1.26,<3.0",
+    "scipy>=1.12,<2.0",
+    "pandas>=2.2,<3.0",
+    "scikit-learn>=1.4,<2.0",
 
-    "opencv-python>=4.10,<5",
-    "Pillow>=10.4,<12",
+    "einops>=0.8,<1.0",
 
-    "pydicom>=3.0,<4",
-    "nibabel>=5.3,<6",
+    "wfdb>=4.1,<5.0",
+    "neurokit2>=0.2,<1.0",
 
-    "PyYAML>=6.0,<7",
-    "python-dotenv>=1.0,<2",
+    "opencv-python>=4.9,<5.0",
+    "av>=12.0,<15.0",
+    "Pillow>=10.0,<13.0",
 
-    "tqdm>=4.66,<5",
+    "PyYAML>=6.0,<7.0",
+    "python-dotenv>=1.0,<2.0",
 
-    "matplotlib>=3.9,<4",
-    "seaborn>=0.13,<1",
+    "shap>=0.45,<1.0",
+    "imbalanced-learn>=0.12,<1.0",
 
-    "shap>=0.46,<1",
+    "torchmetrics>=1.4,<2.0",
+    "statsmodels>=0.14,<1.0",
 
-    "wandb>=0.19,<1",
-    "modal>=1.0,<2"
+    "fastapi>=0.115,<1.0",
+    "uvicorn[standard]>=0.30,<1.0",
+    "pydantic>=2.8,<3.0",
+    "python-multipart>=0.0.9,<1.0",
+
+    "requests>=2.32,<3.0",
+    "tqdm>=4.66,<5.0",
+
+    "loguru>=0.7,<1.0",
+
+    "matplotlib>=3.8,<4.0",
+    "seaborn>=0.13,<1.0"
 ]
 
-
-# ------------------------------------------------------------
-# Development dependencies
-# ------------------------------------------------------------
 
 [project.optional-dependencies]
 
 dev = [
-    "pytest>=8.3,<9",
-    "pytest-cov>=5,<8",
-    "ruff>=0.8,<1",
-    "black>=24.10,<27"
+    "pytest>=8.0,<9.0",
+    "pytest-cov>=5.0,<8.0",
+    "ruff>=0.6,<1.0",
+    "black>=24.0,<26.0",
+    "isort>=5.13,<7.0",
+    "mypy>=1.10,<2.0"
+]
+
+notebooks = [
+    "jupyter>=1.0,<2.0",
+    "jupyterlab>=4.0,<5.0",
+    "ipykernel>=6.29,<7.0",
+    "nbformat>=5.10,<6.0"
 ]
 
 
-# ------------------------------------------------------------
-# Setuptools configuration
-#
-# Our Python source code lives inside:
-#
-# src/
-#
-# Example:
-#
-# src/
-# ├── datasets/
-# ├── models/
-# ├── preprocessing/
-# ├── training/
-# └── utils/
-# ------------------------------------------------------------
+[project.scripts]
+
+cardio-ml-api = "api.main:main"
+
 
 [tool.setuptools]
-
-package-dir = { "" = "src" }
+include-package-data = true
 
 
 [tool.setuptools.packages.find]
-
-where = [
-    "src"
+where = ["."]
+include = [
+    "src*",
+    "api*"
+]
+exclude = [
+    "tests*",
+    "notebooks*",
+    "data*",
+    "artifacts*",
+    "checkpoints*"
 ]
 
 
-# ------------------------------------------------------------
-# Pytest
-# ------------------------------------------------------------
-
-[tool.pytest.ini_options]
-
-testpaths = [
-    "tests"
+[tool.black]
+line-length = 100
+target-version = [
+    "py310",
+    "py311",
+    "py312",
+    "py313"
 ]
 
-python_files = [
-    "test_*.py"
-]
+exclude = '''
+/(
+    \.git
+    | \.venv
+    | venv
+    | data
+    | checkpoints
+    | artifacts
+)/
+'''
 
-python_classes = [
-    "Test*"
-]
-
-python_functions = [
-    "test_*"
-]
-
-addopts = [
-    "-ra"
-]
-
-
-# ------------------------------------------------------------
-# Ruff
-# ------------------------------------------------------------
 
 [tool.ruff]
-
 line-length = 100
+target-version = "py310"
 
-target-version = "py312"
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "data",
+    "checkpoints",
+    "artifacts",
+    "notebooks"
+]
 
 
 [tool.ruff.lint]
-
 select = [
     "E",
     "F",
@@ -165,15 +174,54 @@ select = [
     "UP"
 ]
 
+ignore = [
+    "E501"
+]
 
-# ------------------------------------------------------------
-# Black
-# ------------------------------------------------------------
 
-[tool.black]
+[tool.isort]
+profile = "black"
+line_length = 100
 
-line-length = 100
 
-target-version = [
-    "py312"
+[tool.pytest.ini_options]
+pythonpath = [
+    ".",
+    "src"
+]
+
+testpaths = [
+    "tests"
+]
+
+addopts = [
+    "-ra",
+    "--strict-markers"
+]
+
+markers = [
+    "unit: unit tests",
+    "integration: integration tests",
+    "slow: slow-running tests",
+    "gpu: tests requiring CUDA"
+]
+
+
+[tool.coverage.run]
+source = [
+    "src",
+    "api"
+]
+
+omit = [
+    "tests/*",
+    "notebooks/*"
+]
+
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError"
 ]
