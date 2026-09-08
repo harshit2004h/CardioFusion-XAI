@@ -1,0 +1,338 @@
+# ============================================================
+# ECHONET-DYNAMIC
+# ============================================================
+
+dataset:
+  id: "echonet"
+  name: "EchoNet-Dynamic"
+  modality: "echo"
+  source_type: "video"
+
+  population:
+    records: 10030
+    view: "apical_4_chamber"
+
+  task:
+    type: "regression"
+
+    primary_target: "EF"
+
+
+# ============================================================
+# Files
+# ============================================================
+
+files:
+
+  root: "data/raw/echo/echonet"
+
+  file_list: "FileList.csv"
+
+  volume_tracings: "VolumeTracings.csv"
+
+  videos_directory: "Videos"
+
+
+# ============================================================
+# Video Configuration
+# ============================================================
+
+video:
+
+  view: "apical_4_chamber"
+
+  clip:
+
+    number_of_frames: 32
+
+    frame_stride: 4
+
+  resize:
+
+    height: 112
+    width: 112
+
+  channels: 3
+
+  grayscale_to_rgb: true
+
+
+# ============================================================
+# Preprocessing
+# ============================================================
+
+preprocessing:
+
+  frame_sampling:
+    strategy: "uniform_temporal_sampling"
+    frames: 32
+    stride: 4
+
+  resize:
+    enabled: true
+    height: 112
+    width: 112
+
+  normalization:
+
+    method: "imagenet"
+
+  color:
+
+    input_mode: "grayscale_to_3_channel"
+
+
+# ============================================================
+# Augmentation
+# ============================================================
+
+augmentation:
+
+  enabled: true
+
+  random_crop:
+    enabled: true
+
+  temporal_jitter:
+    enabled: true
+
+  brightness:
+    enabled: true
+
+  horizontal_flip:
+    enabled: false
+
+
+# ============================================================
+# Ground Truth
+# ============================================================
+
+targets:
+
+  lvef:
+
+    source_column: "EF"
+
+    canonical_name: "lvef"
+
+    type: "continuous"
+
+    unit: "percent"
+
+    loss: "SmoothL1Loss"
+
+
+  end_diastolic_volume:
+
+    source_column: "EDV"
+
+    canonical_name: "edv"
+
+    type: "continuous"
+
+    unit: "mL"
+
+    auxiliary_target: true
+
+
+  end_systolic_volume:
+
+    source_column: "ESV"
+
+    canonical_name: "esv"
+
+    type: "continuous"
+
+    unit: "mL"
+
+    auxiliary_target: true
+
+
+# ============================================================
+# Model
+# ============================================================
+
+model:
+
+  architecture: "R2Plus1D"
+
+  backbone: "r2plus1d_18"
+
+  pretrained: true
+
+  pretrained_dataset: "Kinetics-400"
+
+  input_channels: 3
+
+  input_frames: 32
+
+  input_height: 112
+
+  input_width: 112
+
+  dropout: 0.20
+
+  task: "regression"
+
+  output_dimension: 1
+
+  activation: "linear"
+
+  loss: "SmoothL1Loss"
+
+
+# ============================================================
+# EF-Derived Clinical Outputs
+# ============================================================
+
+derived_outputs:
+
+  lv_dysfunction:
+
+    enabled: true
+
+    source: "lvef"
+
+    threshold:
+      operator: "<"
+      value: 50.0
+
+    unit: "percent"
+
+    canonical_name: "lv_dysfunction"
+
+
+  reduced_lvef:
+
+    enabled: true
+
+    source: "lvef"
+
+    threshold:
+      operator: "<"
+      value: 50.0
+
+    unit: "percent"
+
+    canonical_name: "reduced_lvef"
+
+
+  reduced_ef_cardiomyopathy:
+
+    enabled: true
+
+    source: "lvef"
+
+    threshold:
+      operator: "<"
+      value: 40.0
+
+    unit: "percent"
+
+    canonical_name: "reduced_ef_cardiomyopathy"
+
+
+  hfref:
+
+    enabled: true
+
+    source: "lvef"
+
+    threshold:
+      operator: "<"
+      value: 40.0
+
+    unit: "percent"
+
+    canonical_name: "hfrEF"
+
+
+# ============================================================
+# Split
+# ============================================================
+
+split:
+
+  train: 0.70
+  validation: 0.15
+  test: 0.15
+
+  random_state: 42
+
+  patient_level: true
+
+
+# ============================================================
+# Disease Registry Role
+# ============================================================
+
+disease_roles:
+
+  lv_dysfunction:
+    role: "primary"
+    evidence_strength: "strong"
+    primary_modality: "echo"
+    target: "lvef"
+    threshold_percent: 50.0
+
+  reduced_lvef:
+    role: "primary"
+    evidence_strength: "strong"
+    primary_modality: "echo"
+    target: "lvef"
+    threshold_percent: 50.0
+
+  reduced_ef_cardiomyopathy:
+    role: "primary"
+    evidence_strength: "strong"
+    primary_modality: "echo"
+    target: "lvef"
+    threshold_percent: 40.0
+
+  hfref:
+    role: "primary"
+    evidence_strength: "strong"
+    primary_modality: "echo"
+    target: "lvef"
+    threshold_percent: 40.0
+
+
+# ============================================================
+# Unsupported Echo Targets
+# ============================================================
+
+unsupported:
+
+  lvh_rvh:
+    status: true
+    reason: >
+      EchoNet-Dynamic does not provide wall-thickness or chamber-mass
+      ground truth required for direct LVH/RVH confirmation.
+
+  valvular_disease:
+    status: true
+    reason: >
+      The selected EchoNet-Dynamic annotations do not provide the
+      required valve-disease labels for this project.
+
+  regional_wall_motion:
+    status: true
+    reason: >
+      No regional wall-motion labels are provided for the selected task.
+
+
+# ============================================================
+# XAI
+# ============================================================
+
+xai:
+
+  enabled: true
+
+  ef_explanation:
+    enabled: true
+
+  segmentation_overlay:
+    enabled: true
+
+  save_visualizations: true

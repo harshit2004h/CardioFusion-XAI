@@ -1,0 +1,284 @@
+# ============================================================
+# UCI HEART FAILURE CLINICAL RECORDS
+# ============================================================
+
+dataset:
+  id: "uci_heart_failure"
+  name: "UCI Heart Failure Clinical Records"
+  modality: "biomarkers"
+  source_type: "tabular"
+
+  population:
+    records: 299
+    location: "Faisalabad, Pakistan"
+
+  task:
+    type: "binary_classification"
+    target: "DEATH_EVENT"
+
+
+# ============================================================
+# Files
+# ============================================================
+
+files:
+  root: "data/raw/biomarkers/uci_heart_failure"
+
+  data_file: null
+  # Example:
+  # data_file: "data/raw/biomarkers/uci_heart_failure/heart_failure_clinical_records_dataset.csv"
+
+  format: "csv"
+  encoding: "utf-8"
+
+
+# ============================================================
+# Schema
+# ============================================================
+
+schema:
+
+  target:
+    raw_column: "DEATH_EVENT"
+    canonical_name: "hf_mortality"
+    type: "binary"
+
+    positive_values:
+      - 1
+      - "1"
+
+    negative_values:
+      - 0
+      - "0"
+
+  features:
+
+    - name: "age"
+      raw_column: "age"
+      type: "numeric"
+      role: "demographic"
+      required: true
+
+    - name: "anaemia"
+      raw_column: "anaemia"
+      type: "binary"
+      role: "clinical"
+      required: true
+
+    - name: "creatinine_phosphokinase"
+      raw_column: "creatinine_phosphokinase"
+      type: "numeric"
+      role: "laboratory"
+      required: true
+
+    - name: "diabetes"
+      raw_column: "diabetes"
+      type: "binary"
+      role: "clinical"
+      required: true
+
+    - name: "ejection_fraction"
+      raw_column: "ejection_fraction"
+      type: "numeric"
+      role: "cardiac_function"
+      required: true
+
+    - name: "high_blood_pressure"
+      raw_column: "high_blood_pressure"
+      type: "binary"
+      role: "clinical"
+      required: true
+
+    - name: "platelets"
+      raw_column: "platelets"
+      type: "numeric"
+      role: "laboratory"
+      required: true
+
+    - name: "serum_creatinine"
+      raw_column: "serum_creatinine"
+      type: "numeric"
+      role: "biomarker"
+      required: true
+
+    - name: "serum_sodium"
+      raw_column: "serum_sodium"
+      type: "numeric"
+      role: "biomarker"
+      required: true
+
+    - name: "sex"
+      raw_column: "sex"
+      type: "binary"
+      role: "demographic"
+      required: true
+
+    - name: "smoking"
+      raw_column: "smoking"
+      type: "binary"
+      role: "clinical"
+      required: true
+
+
+# ============================================================
+# Explicitly Excluded Columns
+# ============================================================
+
+excluded_columns:
+
+  - name: "time"
+    reason: >
+      Follow-up duration is directly related to the survival outcome
+      and can introduce target leakage.
+
+  - name: "DEATH_EVENT"
+    reason: "Target variable; never used as an input feature."
+
+
+# ============================================================
+# Feature Groups
+# ============================================================
+
+feature_groups:
+
+  demographics:
+    - "age"
+    - "sex"
+
+  comorbidities:
+    - "anaemia"
+    - "diabetes"
+    - "high_blood_pressure"
+    - "smoking"
+
+  cardiac_function:
+    - "ejection_fraction"
+
+  laboratory:
+    - "creatinine_phosphokinase"
+    - "platelets"
+    - "serum_creatinine"
+    - "serum_sodium"
+
+
+# ============================================================
+# Preprocessing
+# ============================================================
+
+preprocessing:
+
+  numeric:
+    missing_strategy: "median"
+    scaling: "standard"
+
+  binary:
+    encoding: "keep_0_1"
+
+  target:
+    encoding: "binary"
+
+  leakage:
+    enabled: true
+
+    remove_columns:
+      - "time"
+      - "DEATH_EVENT"
+
+
+# ============================================================
+# Split
+# ============================================================
+
+split:
+
+  train: 0.70
+  validation: 0.15
+  test: 0.15
+
+  random_state: 42
+
+  stratify: true
+
+
+# ============================================================
+# Class Imbalance
+# ============================================================
+
+imbalance:
+
+  enabled: true
+
+  method: "pos_weight"
+
+  smote:
+    enabled: false
+
+  focal_loss:
+    enabled: false
+
+
+# ============================================================
+# Model
+# ============================================================
+
+model:
+
+  task_name: "hf_mortality"
+
+  task_type: "binary_classification"
+
+  head_type: "binary"
+
+  output_dimension: 1
+
+  activation: "sigmoid"
+
+  loss: "BCEWithLogitsLoss"
+
+
+# ============================================================
+# Progressive System Role
+# ============================================================
+
+disease_roles:
+
+  hf_mortality:
+    role: "primary"
+
+    evidence_strength: "strong"
+
+    primary_modality: "biomarkers"
+
+    primary_dataset: "uci_heart_failure"
+
+    confirmatory_modalities: []
+
+    interpretation:
+      type: "prognostic"
+
+      description: >
+        Predicts the observed mortality outcome represented by
+        DEATH_EVENT in the UCI heart-failure cohort.
+
+
+# ============================================================
+# Important Interpretation Rules
+# ============================================================
+
+interpretation:
+
+  - >
+    This dataset should not be used as a general-population
+    heart-failure diagnosis dataset.
+
+  - >
+    DEATH_EVENT represents mortality outcome in patients represented
+    by the heart-failure cohort.
+
+  - >
+    The ejection_fraction value is already measured in the dataset.
+    It is therefore an input variable for this particular prognostic
+    task and is not an EchoNet prediction.
+
+  - >
+    The model must not use the time column.

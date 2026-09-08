@@ -143,18 +143,9 @@ ml-service/
 │   │   ├── ecg_reader.py
 │   │   └── echo_reader.py
 │   │
-│   ├── validation/
-│   │   ├── __init__.py
-│   │   ├── input_validator.py
-│   │   ├── biomarker_validator.py
-│   │   ├── ecg_validator.py
-│   │   └── echo_validator.py
-│   │
 │   ├── label_harmonization/
 │   │   ├── __init__.py
-│   │   ├── disease_taxonomy.py
-│   │   ├── biomarker_label_map.py
-│   │   └── ecg_label_map.py
+│   │   ├── labels.py
 │   │
 │   ├── preprocessing/
 │   │   ├── __init__.py
@@ -214,82 +205,57 @@ ml-service/
 │   │       ├── normalization.py
 │   │       └── heads.py
 │   │
-│   ├── losses/
-│   │   ├── __init__.py
-│   │   ├── masked_multitask_loss.py
-│   │   ├── weighted_bce.py
-│   │   ├── focal_loss.py
-│   │   ├── weighted_cross_entropy.py
-│   │   └── regression_loss.py
-│   │
 │   ├── training/
 │   │   ├── __init__.py
 │   │   ├── trainer.py
 │   │   ├── train_biomarkers.py
 │   │   ├── train_ecg.py
 │   │   ├── train_echo.py
-│   │   ├── early_stopping.py
-│   │   └── scheduler.py
+│   │   ├── losses.py
 │   │
 │   ├── evaluation/
 │   │   ├── __init__.py
 │   │   ├── evaluator.py
-│   │   ├── binary_metrics.py
-│   │   ├── multilabel_metrics.py
-│   │   ├── regression_metrics.py
-│   │   ├── per_disease_metrics.py
-│   │   └── calibration_metrics.py
+│   │   ├── metrics.py
 │   │
 │   ├── calibration/
 │   │   ├── __init__.py
 │   │   ├── calibrator.py
-│   │   ├── temperature_scaling.py
-│   │   └── platt_scaling.py
 │   │
 │   ├── fusion/
 │   │   ├── __init__.py
 │   │   ├── staged_fusion.py
 │   │   ├── evidence_fusion.py
 │   │   ├── disagreement_handler.py
-│   │   └── modality_state.py
 │   │
 │   ├── xai/
 │   │   ├── __init__.py
 │   │   │
 │   │   ├── biomarkers/
 │   │   │   ├── shap_explainer.py
-│   │   │   └── feature_importance.py
+│   │   │   └── __init__.py
 │   │   │
 │   │   ├── ecg/
 │   │   │   ├── saliency.py
-│   │   │   └── gradcam.py
+│   │   │   └── __init__.py
 │   │   │
 │   │   └── echo/
 │   │       ├── ef_explanation.py
-│   │       └── segmentation_overlay.py
+│   │       └── __init__.py
 │   │
 │   ├── inference/
 │   │   ├── __init__.py
 │   │   ├── predictor.py
-│   │   ├── biomarker_predictor.py
-│   │   ├── ecg_predictor.py
-│   │   ├── echo_predictor.py
-│   │   ├── modality_manager.py
 │   │   ├── disease_engine.py
 │   │   ├── confidence.py
-│   │   ├── evidence.py
 │   │   ├── recommendations.py
-│   │   ├── explanation.py
 │   │   └── result_formatter.py
 │   │
 │   └── utils/
 │       ├── __init__.py
 │       ├── config.py
-│       ├── logging.py
 │       ├── seed.py
-│       ├── device.py
-│       ├── checkpoint.py
-│       └── reproducibility.py
+│       └── device.py
 │
 ├── api/
 │   ├── __init__.py

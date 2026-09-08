@@ -1,0 +1,250 @@
+# ============================================================
+# ZHEEN HEART ATTACK DATASET
+# ============================================================
+
+dataset:
+  id: "zheen"
+  name: "Zheen Heart Attack Dataset"
+  modality: "biomarkers"
+  source_type: "tabular"
+  population:
+    records: 1319
+    location: "Erbil, Iraq"
+
+  task:
+    type: "binary_classification"
+    target: "heart_attack"
+
+  description: >
+    Blood/clinical dataset used for Acute Myocardial Infarction /
+    heart-attack prediction using clinical variables, CK-MB and Troponin.
+
+
+# ============================================================
+# Files
+# ============================================================
+
+files:
+  root: "data/raw/biomarkers/zheen"
+
+  data_file: null
+  # Set this after downloading the dataset.
+  # Example:
+  # data_file: "data/raw/biomarkers/zheen/heart_attack.csv"
+
+  format: "csv"
+
+  encoding: "utf-8"
+
+
+# ============================================================
+# Schema
+# ============================================================
+
+schema:
+
+  target:
+    raw_column: "target"
+    canonical_name: "acute_mi"
+    type: "binary"
+
+    positive_values:
+      - 1
+      - "1"
+      - "yes"
+      - "positive"
+      - "Yes"
+      - "Positive"
+
+    negative_values:
+      - 0
+      - "0"
+      - "no"
+      - "negative"
+      - "No"
+      - "Negative"
+
+  features:
+
+    - name: "age"
+      type: "numeric"
+      role: "clinical"
+      required: true
+
+    - name: "gender"
+      type: "categorical"
+      role: "clinical"
+      required: true
+
+    - name: "heart_rate"
+      type: "numeric"
+      role: "vital"
+      required: true
+
+    - name: "systolic_bp"
+      type: "numeric"
+      role: "vital"
+      required: true
+
+    - name: "diastolic_bp"
+      type: "numeric"
+      role: "vital"
+      required: true
+
+    - name: "blood_glucose"
+      type: "numeric"
+      role: "biomarker"
+      required: true
+
+    - name: "ck_mb"
+      type: "numeric"
+      role: "biomarker"
+      required: true
+
+    - name: "troponin"
+      type: "numeric"
+      role: "biomarker"
+      required: true
+
+
+# ============================================================
+# Feature Groups
+# ============================================================
+
+feature_groups:
+
+  demographics:
+    - "age"
+    - "gender"
+
+  vitals:
+    - "heart_rate"
+    - "systolic_bp"
+    - "diastolic_bp"
+
+  laboratory:
+    - "blood_glucose"
+    - "ck_mb"
+    - "troponin"
+
+
+# ============================================================
+# Preprocessing
+# ============================================================
+
+preprocessing:
+
+  numeric:
+    missing_strategy: "median"
+    scaling: "standard"
+
+  categorical:
+    encoding: "one_hot"
+    handle_unknown: "ignore"
+
+  target:
+    encoding: "binary"
+
+  leakage:
+    enabled: true
+
+    forbidden_columns:
+      - "target"
+
+  # Zheen is a separate source and should be processed
+  # using its own fitted preprocessing objects.
+  source_specific_preprocessing: true
+
+
+# ============================================================
+# Data Split
+# ============================================================
+
+split:
+
+  train: 0.70
+  validation: 0.15
+  test: 0.15
+
+  random_state: 42
+
+  stratify: true
+
+
+# ============================================================
+# Imbalance Handling
+# ============================================================
+
+imbalance:
+
+  enabled: true
+
+  method: "pos_weight"
+
+  oversampling:
+    enabled: false
+
+  focal_loss:
+    enabled: false
+
+
+# ============================================================
+# Model Task
+# ============================================================
+
+model:
+
+  task_name: "acute_mi"
+
+  head_type: "binary"
+
+  activation: "sigmoid"
+
+  loss: "BCEWithLogitsLoss"
+
+  output_dimension: 1
+
+
+# ============================================================
+# Clinical Role in Progressive System
+# ============================================================
+
+disease_roles:
+
+  acute_mi:
+    role: "primary"
+    evidence_strength: "strong"
+
+    primary_modality: "biomarkers"
+
+    confirmatory_modalities:
+      - "ecg"
+
+    confirmatory_dataset:
+      - "ptbxl"
+
+    recommendation_when_missing:
+      modality: "ecg"
+      message: "ECG recommended for additional evidence."
+
+
+# ============================================================
+# Notes
+# ============================================================
+
+notes:
+
+  - >
+    CK-MB and Troponin are the principal biomarkers represented
+    in this dataset for the Acute MI task.
+
+  - >
+    This dataset provides a binary heart-attack target.
+
+  - >
+    Do not use this dataset to create labels for unrelated
+    cardiovascular diseases.
+
+  - >
+    Blood/clinical prediction and ECG confirmation are separate
+    model outputs because this dataset is not paired with PTB-XL.

@@ -1,0 +1,376 @@
+# ============================================================
+# MYOCARDIAL INFARCTION COMPLICATIONS DATASET
+# ============================================================
+
+dataset:
+  id: "mi_complications"
+  name: "Myocardial Infarction Complications"
+  modality: "biomarkers"
+  source_type: "tabular"
+
+  population:
+    records: 1700
+    location: "Krasnoyarsk, Russia"
+    period: "1992-1995"
+
+  important_population_constraint: >
+    All records represent patients who had already experienced
+    myocardial infarction.
+
+  task:
+    type: "multi_task_classification"
+
+
+# ============================================================
+# Files
+# ============================================================
+
+files:
+  root: "data/raw/biomarkers/mi_complications"
+
+  data_file: null
+
+  format: "csv"
+  encoding: "utf-8"
+
+
+# ============================================================
+# Input Schema
+# ============================================================
+
+schema:
+
+  feature_count: 111
+
+  feature_source: "dataset_columns"
+
+  feature_groups:
+
+    demographics:
+      source_defined: true
+
+    comorbidities:
+      source_defined: true
+
+    vitals:
+      source_defined: true
+
+    serum_biochemistry:
+      known_features:
+        - "serum_potassium"
+        - "serum_sodium"
+        - "ALT"
+        - "AST"
+        - "CPK"
+
+    hematology:
+      known_features:
+        - "WBC"
+        - "ESR"
+
+    physician_coded_ecg:
+      type: "categorical"
+      raw_waveform: false
+
+      description: >
+        ECG-related variables are physician-coded categories such
+        as rhythm, blocks and infarct location. They are not ECG
+        signal waveforms and must not be passed through the PTB-XL
+        ECG pipeline.
+
+
+# ============================================================
+# Known Invalid / Unusable Input
+# ============================================================
+
+excluded_features:
+
+  - name: "CPK"
+    status: "exclude"
+    reason: >
+      Approximately 99.8 percent missing according to the dataset
+      assessment documented for this project.
+
+    action: "drop"
+
+
+# ============================================================
+# Multi-Task Targets
+# ============================================================
+
+targets:
+
+  binary:
+
+    - name: "atrial_fibrillation"
+      raw_label: "FIBR_PREDS"
+
+    - name: "supraventricular_tachycardia"
+      raw_label: "PREDS_TAH"
+
+    - name: "ventricular_tachycardia"
+      raw_label: "JELUD_TAH"
+
+    - name: "ventricular_fibrillation"
+      raw_label: "FIBR_JELUD"
+
+    - name: "third_degree_av_block"
+      raw_label: "A_V_BLOK"
+
+    - name: "pulmonary_edema"
+      raw_label: "OTEC_LANC"
+
+    - name: "myocardial_rupture"
+      raw_label: "RAZRIV"
+
+    - name: "dressler_syndrome"
+      raw_label: "DRESSLER"
+
+    - name: "chronic_heart_failure"
+      raw_label: "ZSN"
+
+    - name: "mi_relapse"
+      raw_label: "REC_IM"
+
+    - name: "post_infarction_angina"
+      raw_label: "P_IM_STEN"
+
+  mortality:
+
+    name: "mortality_cause"
+    raw_label: "LET_IS"
+
+    type: "multiclass"
+
+
+# ============================================================
+# Mortality Cause Categories
+# ============================================================
+
+mortality:
+
+  target: "LET_IS"
+
+  type: "multiclass"
+
+  known_causes:
+
+    - code: 1
+      canonical_name: "cardiogenic_shock"
+
+    - code: 2
+      canonical_name: "pulmonary_edema"
+
+    - code: 3
+      canonical_name: "myocardial_rupture"
+
+    - code: 4
+      canonical_name: "progressive_heart_failure"
+
+    - code: 5
+      canonical_name: "thromboembolism"
+
+    - code: 6
+      canonical_name: "asystole"
+
+    - code: 7
+      canonical_name: "ventricular_fibrillation"
+
+
+# ============================================================
+# Feature Handling
+# ============================================================
+
+preprocessing:
+
+  numeric:
+    missing_strategy: "dataset_specific"
+    scaling: "standard"
+
+  categorical:
+    encoding: "one_hot"
+    handle_unknown: "ignore"
+
+  binary:
+    encoding: "keep_0_1"
+
+  missingness:
+
+    strategy: >
+      Use per-column missingness analysis before model training.
+      Do not perform indiscriminate global imputation.
+
+  leakage:
+    enabled: true
+
+
+# ============================================================
+# Multi-Task Learning
+# ============================================================
+
+multi_task:
+
+  enabled: true
+
+  masked_loss: true
+
+  description: >
+    Each available target contributes only to its corresponding
+    output head. Dataset rows are not forced to carry labels for
+    unrelated diseases.
+
+  binary_loss:
+    name: "BCEWithLogitsLoss"
+
+    use_pos_weight: true
+
+  rare_target_loss:
+    name: "FocalLoss"
+
+    enabled: true
+
+    gamma: 2.0
+
+    candidate_targets:
+      - "ventricular_fibrillation"
+      - "myocardial_rupture"
+      - "dressler_syndrome"
+
+  mortality_loss:
+    name: "CrossEntropyLoss"
+
+    class_weights: true
+
+
+# ============================================================
+# Split
+# ============================================================
+
+split:
+
+  train: 0.70
+  validation: 0.15
+  test: 0.15
+
+  random_state: 42
+
+  stratify: false
+
+
+# ============================================================
+# Model
+# ============================================================
+
+model:
+
+  architecture: "FTTransformer"
+
+  input_mode: "source_adapter"
+
+  embedding_dimension: 64
+
+  transformer_blocks: 4
+
+  attention_heads: 4
+
+  dropout: 0.20
+
+  heads:
+
+    complication:
+      type: "binary"
+      activation: "sigmoid"
+
+    mortality:
+      type: "multiclass"
+      activation: "softmax"
+
+
+# ============================================================
+# Disease / Outcome Mapping
+# ============================================================
+
+disease_roles:
+
+  cardiogenic_shock:
+    role: "post_mi_complication"
+    evidence_strength: "strong"
+    source_target: "LET_IS"
+
+  acute_lv_failure:
+    role: "post_mi_complication"
+    evidence_strength: "strong"
+    source_target:
+      - "O_L_POST"
+
+  pulmonary_edema:
+    role: "post_mi_complication"
+    evidence_strength: "strong"
+    source_target:
+      - "OTEC_LANC"
+
+  recurrent_mi:
+    role: "post_mi_complication"
+    evidence_strength: "strong"
+    source_target: "REC_IM"
+
+  post_mi_arrhythmias:
+    role: "post_mi_complication"
+    evidence_strength: "strong"
+    source_target:
+      - "FIBR_PREDS"
+      - "PREDS_TAH"
+      - "JELUD_TAH"
+      - "FIBR_JELUD"
+      - "A_V_BLOK"
+
+  post_mi_mortality:
+    role: "outcome"
+    evidence_strength: "strong"
+    source_target: "LET_IS"
+
+  myocardial_rupture:
+    role: "post_mi_complication"
+    evidence_strength: "strong"
+    source_target: "RAZRIV"
+
+  dressler_syndrome:
+    role: "post_mi_complication"
+    evidence_strength: "strong"
+    source_target: "DRESSLER"
+
+  chronic_heart_failure:
+    role: "post_mi_complication"
+    evidence_strength: "strong"
+    source_target: "ZSN"
+
+  post_infarction_angina:
+    role: "post_mi_complication"
+    evidence_strength: "strong"
+    source_target: "P_IM_STEN"
+
+
+# ============================================================
+# Important Restrictions
+# ============================================================
+
+restrictions:
+
+  - >
+    Do not use this dataset to train a general-population Acute MI
+    detector because all patients already experienced MI.
+
+  - >
+    Do not interpret physician-coded ECG categories as raw ECG
+    waveform data.
+
+  - >
+    Do not feed these ECG categories through the PTB-XL waveform model.
+
+  - >
+    Do not use CPK as an input unless a verified usable replacement
+    version of the source data is obtained.
+
+  - >
+    Post-MI outcomes should be displayed as post-MI complications
+    or outcomes in the application.

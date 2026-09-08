@@ -1,0 +1,327 @@
+# ============================================================
+# FRAMINGHAM HEART STUDY
+# ============================================================
+
+dataset:
+  id: "framingham"
+  name: "Framingham Heart Study Dataset"
+  modality: "biomarkers"
+  source_type: "tabular"
+
+  population:
+    records: 4238
+
+  task:
+    type: "binary_classification"
+    target: "TenYearCHD"
+
+  purpose: >
+    Ten-year coronary heart disease risk prediction.
+
+
+# ============================================================
+# Files
+# ============================================================
+
+files:
+  root: "data/raw/biomarkers/framingham"
+
+  data_file: null
+
+  format: "csv"
+
+  encoding: "utf-8"
+
+
+# ============================================================
+# Schema
+# ============================================================
+
+schema:
+
+  target:
+    raw_column: "TenYearCHD"
+    canonical_name: "ten_year_chd_risk"
+
+    type: "binary"
+
+    positive_values:
+      - 1
+      - "1"
+
+    negative_values:
+      - 0
+      - "0"
+
+  features:
+
+    - name: "sex"
+      raw_column: "male"
+      type: "binary"
+      role: "demographic"
+      required: true
+
+    - name: "age"
+      raw_column: "age"
+      type: "numeric"
+      role: "demographic"
+      required: true
+
+    - name: "education"
+      raw_column: "education"
+      type: "categorical"
+      role: "demographic"
+      required: true
+
+    - name: "current_smoker"
+      raw_column: "currentSmoker"
+      type: "binary"
+      role: "lifestyle"
+      required: true
+
+    - name: "cigarettes_per_day"
+      raw_column: "cigsPerDay"
+      type: "numeric"
+      role: "lifestyle"
+      required: true
+
+    - name: "bp_medication"
+      raw_column: "BPMeds"
+      type: "binary"
+      role: "clinical"
+      required: true
+
+    - name: "prevalent_stroke"
+      raw_column: "prevalentStroke"
+      type: "binary"
+      role: "clinical"
+      required: true
+
+    - name: "prevalent_hypertension"
+      raw_column: "prevalentHyp"
+      type: "binary"
+      role: "clinical"
+      required: true
+
+    - name: "diabetes"
+      raw_column: "diabetes"
+      type: "binary"
+      role: "clinical"
+      required: true
+
+    - name: "total_cholesterol"
+      raw_column: "totChol"
+      type: "numeric"
+      role: "laboratory"
+      required: true
+
+    - name: "systolic_bp"
+      raw_column: "sysBP"
+      type: "numeric"
+      role: "vital"
+      required: true
+
+    - name: "diastolic_bp"
+      raw_column: "diaBP"
+      type: "numeric"
+      role: "vital"
+      required: true
+
+    - name: "bmi"
+      raw_column: "BMI"
+      type: "numeric"
+      role: "anthropometric"
+      required: true
+
+    - name: "heart_rate"
+      raw_column: "heartRate"
+      type: "numeric"
+      role: "vital"
+      required: true
+
+    - name: "glucose"
+      raw_column: "glucose"
+      type: "numeric"
+      role: "laboratory"
+      required: true
+
+
+# ============================================================
+# Feature Groups
+# ============================================================
+
+feature_groups:
+
+  demographics:
+    - "sex"
+    - "age"
+    - "education"
+
+  lifestyle:
+    - "current_smoker"
+    - "cigarettes_per_day"
+
+  clinical:
+    - "bp_medication"
+    - "prevalent_stroke"
+    - "prevalent_hypertension"
+    - "diabetes"
+
+  laboratory:
+    - "total_cholesterol"
+    - "glucose"
+
+  vitals:
+    - "systolic_bp"
+    - "diastolic_bp"
+    - "heart_rate"
+
+  anthropometric:
+    - "bmi"
+
+
+# ============================================================
+# Preprocessing
+# ============================================================
+
+preprocessing:
+
+  numeric:
+    missing_strategy: "median"
+    scaling: "standard"
+
+  categorical:
+    encoding: "one_hot"
+    handle_unknown: "ignore"
+
+  binary:
+    encoding: "keep_0_1"
+
+  target:
+    encoding: "binary"
+
+  leakage:
+    enabled: true
+
+    remove_target_from_features: true
+
+
+# ============================================================
+# Class Imbalance
+# ============================================================
+
+imbalance:
+
+  enabled: true
+
+  target: "TenYearCHD"
+
+  method: "SMOTE"
+
+  apply_only_to_training_data: true
+
+  never_apply_before_split: true
+
+
+# ============================================================
+# Split
+# ============================================================
+
+split:
+
+  train: 0.70
+  validation: 0.15
+  test: 0.15
+
+  random_state: 42
+
+  stratify: true
+
+
+# ============================================================
+# Model
+# ============================================================
+
+model:
+
+  architecture: "FTTransformer"
+
+  input_adapter: true
+
+  embedding_dimension: 64
+
+  transformer_blocks: 4
+
+  attention_heads: 4
+
+  dropout: 0.20
+
+  head:
+
+    type: "binary"
+
+    activation: "sigmoid"
+
+    loss: "BCEWithLogitsLoss"
+
+
+# ============================================================
+# Risk Output
+# ============================================================
+
+risk:
+
+  name: "10_year_chd"
+
+  horizon_years: 10
+
+  output_type: "probability"
+
+  calibration_required: true
+
+  expected_performance_ceiling:
+    enabled: true
+    approximate_auc: 0.70
+
+  ui_warning: >
+    This is a ten-year CHD risk estimate and must not be presented
+    as a diagnosis of acute myocardial infarction or current heart failure.
+
+
+# ============================================================
+# Disease Registry Role
+# ============================================================
+
+disease_roles:
+
+  ten_year_chd_risk:
+
+    role: "risk_prediction"
+
+    evidence_strength: "limited"
+
+    primary_modality: "biomarkers"
+
+    primary_dataset: "framingham"
+
+    confirmatory_modalities: []
+
+
+# ============================================================
+# Important Restrictions
+# ============================================================
+
+restrictions:
+
+  - >
+    TenYearCHD is a longitudinal risk outcome, not an acute MI label.
+
+  - >
+    This dataset must not be used to train the Acute MI classifier.
+
+  - >
+    A high TenYearCHD risk does not mean that an acute MI is currently occurring.
+
+  - >
+    Report performance using AUROC, AUPRC, calibration and
+    clinically meaningful threshold metrics rather than accuracy alone.

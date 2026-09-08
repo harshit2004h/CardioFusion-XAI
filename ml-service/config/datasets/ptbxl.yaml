@@ -1,0 +1,370 @@
+# ============================================================
+# PTB-XL ECG DATASET
+# ============================================================
+
+dataset:
+  id: "ptbxl"
+  name: "PTB-XL"
+  modality: "ecg"
+  source_type: "waveform"
+
+  population:
+    records: 21837
+    patients: 18885
+
+  task:
+    type: "multilabel_classification"
+
+  annotation_standard: "SCP-ECG"
+
+
+# ============================================================
+# Files
+# ============================================================
+
+files:
+
+  root: "data/raw/ecg/ptbxl"
+
+  database_csv: "ptbxl_database.csv"
+
+  scp_statements_csv: "scp_statements.csv"
+
+  waveform_directory: "records100"
+
+  waveform_extension: ".dat"
+
+  header_extension: ".hea"
+
+
+# ============================================================
+# Signal Configuration
+# ============================================================
+
+signal:
+
+  number_of_leads: 12
+
+  lead_order:
+
+    - "I"
+    - "II"
+    - "III"
+    - "aVR"
+    - "aVL"
+    - "aVF"
+    - "V1"
+    - "V2"
+    - "V3"
+    - "V4"
+    - "V5"
+    - "V6"
+
+  original_duration_seconds: 10
+
+  target_duration_seconds: 10
+
+  target_sampling_rate_hz: 100
+
+  preprocessing_sampling_rate_hz: 100
+
+
+# ============================================================
+# Preprocessing
+# ============================================================
+
+preprocessing:
+
+  resampling:
+    enabled: true
+    target_hz: 100
+
+  baseline_wander:
+    enabled: true
+
+  powerline_filter:
+    enabled: true
+    frequency_hz: 50
+
+  normalization:
+    enabled: true
+    method: "per_record"
+
+  clipping:
+    enabled: false
+
+
+# ============================================================
+# Data Augmentation
+# ============================================================
+
+augmentation:
+
+  enabled: true
+
+  gaussian_noise:
+    enabled: true
+    std: 0.01
+
+  time_shift:
+    enabled: true
+    max_fraction: 0.05
+
+  time_warp:
+    enabled: true
+    max_fraction: 0.05
+
+  lead_dropout:
+    enabled: true
+    probability: 0.10
+
+
+# ============================================================
+# Diagnostic Labels
+# ============================================================
+
+labels:
+
+  diagnostic_superclasses:
+
+    - code: "NORM"
+      canonical_name: "normal"
+
+    - code: "MI"
+      canonical_name: "acute_mi_ecg_evidence"
+
+    - code: "STTC"
+      canonical_name: "st_t_abnormalities"
+
+    - code: "CD"
+      canonical_name: "conduction_abnormality"
+
+    - code: "HYP"
+      canonical_name: "hypertrophy_ecg_evidence"
+
+
+  diagnostic_subclasses:
+
+    mi:
+
+      - "AMI"
+      - "ASMI"
+      - "IMI"
+      - "LMI"
+      - "PMI"
+
+    ischemic_st_t:
+
+      - "ISC"
+      - "NST"
+
+
+# ============================================================
+# Rhythm Labels
+# ============================================================
+
+rhythm_labels:
+
+  enabled: true
+
+  known_labels:
+
+    - "SR"
+    - "AFIB"
+    - "AFLT"
+    - "STACH"
+    - "SBRAD"
+    - "SARRH"
+    - "PSVT"
+    - "BIGU"
+    - "PACE"
+
+
+# ============================================================
+# Conduction Labels
+# ============================================================
+
+conduction_labels:
+
+  av_block:
+    enabled: true
+    source_group: "_AVB"
+
+  left_bundle_branch:
+
+    - "CLBBB"
+    - "ILBBB"
+
+  right_bundle_branch:
+
+    - "CRBBB"
+    - "IRBBB"
+
+  fascicular:
+
+    - "LAFB"
+    - "LPFB"
+
+  other:
+
+    - "WPW"
+    - "IVCD"
+
+
+# ============================================================
+# Model
+# ============================================================
+
+model:
+
+  architecture: "XResNet1D"
+
+  depth: 101
+
+  input_channels: 12
+
+  input_length: 1000
+
+  pretrained: false
+
+  dropout: 0.20
+
+  task: "multilabel_classification"
+
+  activation: "sigmoid"
+
+  loss: "BCEWithLogitsLoss"
+
+  use_pos_weight: true
+
+
+# ============================================================
+# Output Heads
+# ============================================================
+
+heads:
+
+  diagnostic_superclass:
+
+    enabled: true
+
+    output_dimension: 5
+
+    labels:
+      - "NORM"
+      - "MI"
+      - "STTC"
+      - "CD"
+      - "HYP"
+
+
+  rhythm:
+
+    enabled: true
+
+    type: "multilabel"
+
+    activation: "sigmoid"
+
+
+# ============================================================
+# Split
+# ============================================================
+
+split:
+
+  train: 0.70
+  validation: 0.15
+  test: 0.15
+
+  random_state: 42
+
+  patient_level: true
+
+  stratify: false
+
+
+# ============================================================
+# Unsupported Targets
+# ============================================================
+
+unsupported:
+
+  ventricular_tachycardia:
+    status: true
+    reason: >
+      PTB-XL does not provide sufficient sustained VT/VF
+      ground truth for a reliable general-population detector.
+
+  ventricular_fibrillation:
+    status: true
+    reason: >
+      Resting 10-second PTB-XL recordings do not provide sufficient
+      sustained VF examples.
+
+
+# ============================================================
+# Disease Registry Role
+# ============================================================
+
+disease_roles:
+
+  acute_mi:
+    role: "confirmatory"
+    evidence_strength: "strong"
+    canonical_target: "MI"
+
+  st_t_abnormalities:
+    role: "primary"
+    evidence_strength: "strong"
+    canonical_target: "STTC"
+
+  atrial_fibrillation:
+    role: "primary"
+    evidence_strength: "strong"
+    canonical_target: "AFIB"
+
+  bradyarrhythmia:
+    role: "primary"
+    evidence_strength: "strong"
+    canonical_target: "SBRAD"
+
+  av_block:
+    role: "primary"
+    evidence_strength: "strong"
+    canonical_target: "_AVB"
+
+  lbbb_rbbb:
+    role: "primary"
+    evidence_strength: "strong"
+    canonical_target:
+      - "CLBBB"
+      - "ILBBB"
+      - "CRBBB"
+      - "IRBBB"
+
+  other_conduction_abnormalities:
+    role: "primary"
+    evidence_strength: "strong"
+    canonical_target:
+      - "LAFB"
+      - "LPFB"
+      - "WPW"
+      - "IVCD"
+
+
+# ============================================================
+# XAI
+# ============================================================
+
+xai:
+
+  enabled: true
+
+  saliency:
+    enabled: true
+
+  gradcam:
+    enabled: true
+
+  save_attribution_maps: true

@@ -1,0 +1,798 @@
+# ============================================================
+# Cardio Fusion XAI - Base Configuration
+# ============================================================
+
+project:
+  name: "Cardio Fusion XAI"
+  service_name: "cardio-fusion-xai-ml"
+  version: "0.1.0"
+  environment: "development"
+
+  # Reproducibility
+  seed: 42
+
+  # Device:
+  # auto  -> CUDA if available, otherwise CPU
+  # cuda  -> force CUDA
+  # cpu   -> force CPU
+  device: "auto"
+
+  # Number of workers used by PyTorch DataLoaders.
+  # Start low on Windows and increase after validation.
+  num_workers: 2
+
+  # Enable deterministic behavior where possible.
+  deterministic: true
+
+
+# ============================================================
+# Hardware
+# ============================================================
+
+hardware:
+  gpu:
+    enabled: true
+    device_index: 0
+
+  # Mixed precision is useful for RTX GPUs and especially
+  # for ECG / Echo training.
+  mixed_precision:
+    enabled: true
+    dtype: "float16"
+
+  # Gradient accumulation can be increased if GPU memory
+  # is insufficient for the desired batch size.
+  gradient_accumulation_steps: 1
+
+
+# ============================================================
+# Directory Configuration
+# ============================================================
+
+paths:
+
+  data:
+    root: "data"
+    raw: "data/raw"
+    interim: "data/interim"
+    processed: "data/processed"
+
+  datasets:
+    biomarkers:
+      zheen: "data/raw/biomarkers/zheen"
+      uci_heart_failure: "data/raw/biomarkers/uci_heart_failure"
+      mi_complications: "data/raw/biomarkers/mi_complications"
+      framingham: "data/raw/biomarkers/framingham"
+
+    ecg:
+      ptbxl: "data/raw/ecg/ptbxl"
+
+    echo:
+      echonet: "data/raw/echo/echonet"
+
+  checkpoints:
+    root: "checkpoints"
+
+    biomarkers: "checkpoints/biomarkers"
+    ecg: "checkpoints/ecg"
+    echo: "checkpoints/echo"
+
+    calibration: "checkpoints/calibration"
+
+  artifacts:
+    root: "artifacts"
+    metrics: "artifacts/metrics"
+    plots: "artifacts/plots"
+    roc: "artifacts/roc_curves"
+    pr: "artifacts/pr_curves"
+    confusion_matrix: "artifacts/confusion_matrices"
+    calibration: "artifacts/calibration"
+    xai: "artifacts/xai"
+
+  logs:
+    root: "logs"
+
+
+# ============================================================
+# Data Split Configuration
+# ============================================================
+
+data_split:
+
+  # Main training split.
+  train_ratio: 0.70
+
+  # Validation split.
+  validation_ratio: 0.15
+
+  # Final held-out test split.
+  test_ratio: 0.15
+
+  # All splits must be created before:
+  # - SMOTE
+  # - augmentation statistics
+  # - calibration
+  # - threshold optimization
+  prevent_leakage: true
+
+  random_state: 42
+
+  # For datasets containing multiple samples per patient,
+  # use patient-level splitting.
+  patient_level_split: true
+
+  # Stratify whenever the target structure permits it.
+  stratify: true
+
+
+# ============================================================
+# General Training Configuration
+# ============================================================
+
+training:
+
+  # Number of epochs is overridden by modality-specific
+  # configuration files where necessary.
+  max_epochs: 100
+
+  # Optimizer defaults.
+  optimizer:
+    name: "AdamW"
+    learning_rate: 0.0001
+    weight_decay: 0.0001
+    betas:
+      - 0.9
+      - 0.999
+
+  # Learning-rate scheduler defaults.
+  scheduler:
+    name: "CosineAnnealingLR"
+
+  # Early stopping.
+  early_stopping:
+    enabled: true
+    monitor: "val_loss"
+    mode: "min"
+    patience: 12
+    min_delta: 0.0001
+
+  # Gradient clipping.
+  gradient_clipping:
+    enabled: true
+    max_norm: 1.0
+
+  # Checkpointing.
+  checkpoint:
+    save_best: true
+    save_last: true
+
+  # Logging frequency.
+  log_every_n_steps: 50
+
+
+# ============================================================
+# Blood / Clinical Training
+# ============================================================
+
+biomarkers:
+
+  enabled: true
+
+  datasets:
+    - "zheen"
+    - "uci_heart_failure"
+    - "mi_complications"
+    - "framingham"
+
+  architecture:
+    name: "FTTransformer"
+
+    embedding_dim: 64
+    num_transformer_blocks: 4
+    num_attention_heads: 4
+    dropout: 0.20
+
+    # Dataset-specific input adapters map each source's
+    # feature schema into a common representation.
+    use_source_adapters: true
+
+    source_embedding: true
+
+  baseline:
+    enabled: true
+    architecture: "ResidualMLP"
+
+  training:
+
+    max_epochs: 100
+
+    batch_size: 64
+
+    optimizer:
+      name: "AdamW"
+      learning_rate: 0.0005
+      weight_decay: 0.0001
+
+    scheduler:
+      name: "CosineAnnealingLR"
+
+    early_stopping:
+      monitor: "val_loss"
+      mode: "min"
+      patience: 15
+
+  missing_values:
+
+    # Missing-value handling is dataset-specific.
+    strategy: "dataset_specific"
+
+    # Do not globally impute before identifying source.
+    global_imputation: false
+
+  imbalance:
+
+    enabled: true
+
+    # Per-task positive weighting.
+    use_pos_weight: true
+
+    # Focal loss can be enabled for extremely rare targets.
+    focal_loss:
+      enabled: true
+      gamma: 2.0
+
+    # SMOTE is used only where appropriate, and only on
+    # the training partition.
+    smote:
+      enabled: true
+      training_only: true
+
+
+# ============================================================
+# ECG Configuration - PTB-XL
+# ============================================================
+
+ecg:
+
+  enabled: true
+
+  dataset: "ptbxl"
+
+  input:
+
+    leads: 12
+
+    duration_seconds: 10
+
+    sampling_rate_hz: 100
+
+    # Original PTB-XL may contain higher-frequency recordings.
+    # The preprocessing pipeline will resample according
+    # to the dataset configuration.
+    target_sampling_rate_hz: 100
+
+  preprocessing:
+
+    baseline_wander_removal: true
+
+    powerline_filter:
+      enabled: true
+      frequency_hz: 50
+
+    normalization:
+      method: "per_record"
+
+    artifact_detection:
+      enabled: true
+
+  augmentation:
+
+    enabled: true
+
+    gaussian_noise:
+      enabled: true
+      std: 0.01
+
+    time_shift:
+      enabled: true
+      max_fraction: 0.05
+
+    time_warp:
+      enabled: true
+      max_fraction: 0.05
+
+    lead_dropout:
+      enabled: true
+      probability: 0.10
+
+  model:
+
+    architecture: "XResNet1D"
+
+    depth: 101
+
+    input_channels: 12
+
+    dropout: 0.20
+
+    pretrained: false
+
+  output:
+
+    # Multi-label classification.
+    activation: "sigmoid"
+
+    loss: "BCEWithLogitsLoss"
+
+    diagnostic_superclasses:
+      enabled: true
+      labels:
+        - "NORM"
+        - "MI"
+        - "STTC"
+        - "CD"
+        - "HYP"
+
+    rhythm_head:
+      enabled: true
+
+
+# ============================================================
+# Echo Configuration - EchoNet-Dynamic
+# ============================================================
+
+echo:
+
+  enabled: true
+
+  dataset: "echonet"
+
+  input:
+
+    # Number of frames passed to the video model.
+    num_frames: 32
+
+    frame_stride: 4
+
+    height: 112
+    width: 112
+
+    channels: 3
+
+    # EchoNet grayscale information is duplicated to
+    # three channels when required by the pretrained model.
+    grayscale_to_rgb: true
+
+  preprocessing:
+
+    normalization:
+      method: "imagenet"
+
+    resize:
+      enabled: true
+
+  augmentation:
+
+    enabled: true
+
+    random_crop:
+      enabled: true
+
+    temporal_jitter:
+      enabled: true
+
+    brightness:
+      enabled: true
+
+  model:
+
+    architecture: "R2Plus1D"
+
+    backbone: "r2plus1d_18"
+
+    pretrained: true
+
+    pretrained_dataset: "Kinetics-400"
+
+    dropout: 0.20
+
+  task:
+
+    type: "regression"
+
+    target: "LVEF"
+
+    output_units: "percent"
+
+    loss: "SmoothL1Loss"
+
+  derived_outputs:
+
+    lv_systolic_dysfunction:
+      enabled: true
+      threshold_percent: 50.0
+
+    reduced_lvef:
+      enabled: true
+      threshold_percent: 50.0
+
+    reduced_ef_cardiomyopathy:
+      enabled: true
+      threshold_percent: 40.0
+
+    hfrEF:
+      enabled: true
+      threshold_percent: 40.0
+
+
+# ============================================================
+# Calibration
+# ============================================================
+
+calibration:
+
+  enabled: true
+
+  # Calibration is performed separately for each
+  # model/disease combination.
+  per_model: true
+
+  per_disease: true
+
+  methods:
+
+    primary:
+      name: "temperature_scaling"
+
+    fallback:
+      name: "platt_scaling"
+
+  calibration_split:
+    source: "validation"
+    fraction: 1.0
+
+  metrics:
+
+    evaluate_before:
+      - "BrierScore"
+      - "ExpectedCalibrationError"
+
+    evaluate_after:
+      - "BrierScore"
+      - "ExpectedCalibrationError"
+
+  save_calibrators: true
+
+
+# ============================================================
+# Confidence Configuration
+# ============================================================
+
+confidence:
+
+  enabled: true
+
+  levels:
+
+    high:
+      name: "HIGH"
+
+    moderate:
+      name: "MODERATE"
+
+    low:
+      name: "LOW"
+
+  # Validation performance influences the confidence label.
+  auc_thresholds:
+
+    high_min_auc: 0.90
+    moderate_min_auc: 0.75
+
+  # Never claim HIGH confidence if the disease has
+  # insufficient training/validation support.
+  require_validation_support: true
+
+  # Confirmatory modality agreement can increase
+  # confidence but cannot manufacture a probability.
+  confirmation:
+
+    agreement:
+      increase_confidence: true
+
+    disagreement:
+      maximum_confidence: "MODERATE"
+
+      expose_both_predictions: true
+
+
+# ============================================================
+# Fusion Configuration
+# ============================================================
+
+fusion:
+
+  enabled: true
+
+  strategy: "decision_level"
+
+  # There is no paired blood+ECG+echo ground truth in
+  # the selected six datasets.
+  paired_multimodal_training: false
+
+  feature_level_fusion: false
+
+  end_to_end_trimodal_training: false
+
+  # Each expert independently produces evidence.
+  experts:
+
+    biomarkers:
+      enabled: true
+
+    ecg:
+      enabled: true
+
+    echo:
+      enabled: true
+
+  progressive_inference:
+
+    enabled: true
+
+    sequence:
+      - "biomarkers"
+      - "ecg"
+      - "echo"
+
+  probability_combination:
+
+    # Do NOT average probabilities from unpaired models.
+    blind_average: false
+
+    blind_multiplication: false
+
+    weighted_average: false
+
+  evidence_fusion:
+
+    preserve_primary_probability: true
+
+    update_confidence_on_agreement: true
+
+    expose_disagreement: true
+
+
+# ============================================================
+# Disease Registry
+# ============================================================
+
+disease_registry:
+
+  file: "config/disease_registry.yaml"
+
+  validate_on_startup: true
+
+  # Only diseases/outcomes explicitly supported by
+  # the selected datasets are enabled.
+  reject_unsupported_predictions: true
+
+
+# ============================================================
+# Label Taxonomy
+# ============================================================
+
+label_taxonomy:
+
+  file: "config/label_taxonomy.yaml"
+
+  validate_on_startup: true
+
+  strict_mapping: true
+
+  # Raw labels that cannot be reliably mapped to a
+  # canonical condition are not silently converted.
+  allow_unknown_labels: false
+
+
+# ============================================================
+# Explainable AI
+# ============================================================
+
+xai:
+
+  enabled: true
+
+  biomarkers:
+
+    enabled: true
+
+    method: "SHAP"
+
+    max_features: 15
+
+  ecg:
+
+    enabled: true
+
+    methods:
+      - "saliency"
+      - "gradcam"
+
+    save_visualizations: true
+
+  echo:
+
+    enabled: true
+
+    methods:
+      - "ef_explanation"
+      - "segmentation_overlay"
+
+    save_visualizations: true
+
+
+# ============================================================
+# Evaluation
+# ============================================================
+
+evaluation:
+
+  enabled: true
+
+  classification_metrics:
+
+    primary:
+      - "AUROC"
+      - "AUPRC"
+
+    secondary:
+      - "F1"
+      - "MCC"
+      - "Precision"
+      - "Recall"
+      - "Specificity"
+      - "Sensitivity"
+
+  regression_metrics:
+
+    - "MAE"
+    - "RMSE"
+    - "R2"
+
+  calibration_metrics:
+
+    - "BrierScore"
+    - "ECE"
+
+  save_predictions: true
+
+  save_metrics: true
+
+  generate_plots: true
+
+
+# ============================================================
+# Inference
+# ============================================================
+
+inference:
+
+  # Maximum upload/inference stages.
+  progressive: true
+
+  stages:
+
+    blood:
+      enabled: true
+
+    ecg:
+      enabled: true
+
+    echo:
+      enabled: true
+
+  behavior:
+
+    # If the primary modality isn't available, don't
+    # fabricate a probability.
+    missing_primary_modality: "return_null"
+
+    # Recommendation generated by disease registry.
+    recommend_missing_modality: true
+
+    preserve_previous_results: true
+
+    expose_modality_evidence: true
+
+
+# ============================================================
+# API
+# ============================================================
+
+api:
+
+  host: "0.0.0.0"
+
+  port: 8001
+
+  reload: true
+
+  workers: 1
+
+  max_upload_size_mb: 200
+
+  cors:
+
+    enabled: true
+
+    origins:
+      - "http://localhost:3000"
+      - "http://localhost:5173"
+
+  timeout_seconds: 120
+
+
+# ============================================================
+# Logging
+# ============================================================
+
+logging:
+
+  level: "INFO"
+
+  format: "standard"
+
+  console: true
+
+  file:
+    enabled: true
+    path: "logs/ml-service.log"
+
+  include:
+
+    timestamps: true
+    process_id: true
+    function_name: true
+
+
+# ============================================================
+# Experiment Tracking
+# ============================================================
+
+experiment_tracking:
+
+  enabled: false
+
+  provider: "wandb"
+
+  project: "cardio-fusion-xai"
+
+  entity: null
+
+  offline: false
+
+
+# ============================================================
+# Runtime Safety
+# ============================================================
+
+safety:
+
+  reject_nan_inputs: true
+
+  reject_inf_inputs: true
+
+  validate_feature_schema: true
+
+  validate_ecg_shape: true
+
+  validate_echo_shape: true
+
+  validate_model_checkpoint: true
+
+  reject_missing_calibration: true
+
+  reject_unsupported_disease: true
+
+  clinical_disclaimer: true
