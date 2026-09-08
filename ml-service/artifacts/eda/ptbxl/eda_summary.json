@@ -1,0 +1,14 @@
+[
+  {
+    "dataset":"PTB-XL",
+    "recordings":21837,
+    "patients":18885,
+    "duplicate_rows":0,
+    "average_annotations_per_record":2.7988734716,
+    "max_annotations_per_record":9,
+    "sample_sampling_frequency":100.0,
+    "sample_lead_count":12,
+    "sample_has_nan":false,
+    "sample_has_inf":false
+  }
+]

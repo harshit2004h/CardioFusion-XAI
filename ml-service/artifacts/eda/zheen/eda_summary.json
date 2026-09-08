@@ -1,0 +1,13 @@
+[
+  {
+    "dataset":"Zheen Heart Attack Dataset",
+    "rows":1319,
+    "columns":9,
+    "missing_values":0,
+    "duplicate_rows":0,
+    "target_counts":{
+      "positive":810,
+      "negative":509
+    }
+  }
+]

@@ -149,7 +149,6 @@ checkpoints/
 # Generated ML Artifacts
 
 
-artifacts/
 runs/
 wandb/
 mlruns/
