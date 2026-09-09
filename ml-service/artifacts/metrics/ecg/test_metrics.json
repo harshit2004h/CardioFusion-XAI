@@ -1,0 +1,9 @@
+[
+  {
+    "loss":1.8722199376,
+    "diagnostic_auroc":0.8880132981,
+    "diagnostic_f1":0.67013784,
+    "rhythm_auroc":0.9559134343,
+    "rhythm_f1":0.461646652
+  }
+]
