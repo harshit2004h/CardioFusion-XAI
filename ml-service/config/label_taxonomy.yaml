@@ -1,0 +1,8 @@
+acute_mi:
+  ecg: [MI]
+atrial_fibrillation:
+  ecg: [AFIB, AFLT]
+bradyarrhythmia:
+  ecg: [SBRAD]
+st_t_abnormalities:
+  ecg: [STTC]

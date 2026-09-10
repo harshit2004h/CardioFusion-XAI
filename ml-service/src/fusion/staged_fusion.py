@@ -1,3 +1,5 @@
+import math
+
 from .disagreement_handler import (
     DisagreementHandler,
 )
@@ -48,15 +50,17 @@ class StagedFusionEngine:
                 if ef_value is None:
                     return None
 
-                return float(
-                    float(ef_value)
-                    < float(primary_output["threshold_ef"])
-                )
+                return float(float(ef_value) < float(primary_output["threshold_ef"]))
 
             if output_type == "continuous":
                 field = primary_output.get("field")
                 value = modality_predictions.get(field)
-                return None if value is None else float(value)
+                if value is None:
+                    return None
+                probability = float(value)
+                if not math.isfinite(probability):
+                    raise ValueError("Model output must be finite.")
+                return probability
 
             raise ValueError(
                 f"Unsupported primary output type: {output_type}"
@@ -64,20 +68,31 @@ class StagedFusionEngine:
 
         if primary_output is not None:
             value = modality_predictions.get(primary_output)
-            return None if value is None else float(value)
+            if value is None:
+                return None
+            probability = float(value)
+            if not math.isfinite(probability) or not 0.0 <= probability <= 1.0:
+                raise ValueError("Probability must be finite and within [0, 1].")
+            return probability
 
         for output_name in config.get("primary_outputs", []):
             value = modality_predictions.get(output_name)
             if value is not None:
-                return float(value)
+                probability = float(value)
+                if not math.isfinite(probability) or not 0.0 <= probability <= 1.0:
+                    raise ValueError("Probability must be finite and within [0, 1].")
+                return probability
 
         for output_name in config.get("primary_output_group", []):
             value = modality_predictions.get(output_name)
             if value is not None:
-                return max(
+                probabilities = [
                     float(modality_predictions.get(name, 0.0))
                     for name in config["primary_output_group"]
-                )
+                ]
+                if any(not math.isfinite(probability) or not 0.0 <= probability <= 1.0 for probability in probabilities):
+                    raise ValueError("Probability must be finite and within [0, 1].")
+                return max(probabilities)
 
         return None
 
@@ -253,6 +268,10 @@ class StagedFusionEngine:
                 confirmatory_probability
             )
 
+            confirmatory_probability = float(confirmatory_probability)
+            if not math.isfinite(confirmatory_probability) or not 0.0 <= confirmatory_probability <= 1.0:
+                raise ValueError("Confirmatory probability must be finite and within [0, 1].")
+
             if abs(
                 float(primary_probability)
                 - float(confirmatory_probability)
@@ -267,10 +286,7 @@ class StagedFusionEngine:
                         confidence
                     )
                 )
-
-                result[
-                    "confirmation_message"
-                ] = (
+                result["confirmation_message"] = (
                     f"{modality} provides "
                     "supporting evidence."
                 )

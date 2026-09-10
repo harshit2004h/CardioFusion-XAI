@@ -1,0 +1,9 @@
+frames: 32
+stride: 4
+height: 112
+width: 112
+channels: 3
+model:
+  name: r2plus1d_18
+  checkpoint: checkpoints/echo/echonet_r2plus1d18.pt
+target: EF

@@ -60,6 +60,7 @@ dependencies = [
 
     "opencv-python>=4.9,<5.0",
     "Pillow>=10.0,<13.0",
+    "pydicom>=3.0,<4.0",
 
     "PyYAML>=6.0,<7.0",
     "python-dotenv>=1.0,<2.0",
@@ -76,12 +77,16 @@ dependencies = [
     "python-multipart>=0.0.9,<1.0",
 
     "requests>=2.32,<3.0",
+    "pypdf>=5.0,<6.0",
+    "pytesseract>=0.3.13,<1.0",
     "tqdm>=4.66,<5.0",
 
     "loguru>=0.7,<1.0",
 
     "matplotlib>=3.8,<4.0",
-    "seaborn>=0.13,<1.0"
+    "seaborn>=0.13,<4.0",
+    "pinecone>=6.0,<8.0",
+    "google-genai>=1.0,<2.0"
 ]
 
 

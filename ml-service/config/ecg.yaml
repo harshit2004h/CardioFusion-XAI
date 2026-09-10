@@ -1,0 +1,11 @@
+sampling_rate: 100
+duration_seconds: 10
+num_leads: 12
+samples: 1000
+model:
+  name: xresnet1d
+  depth: 101
+  checkpoint: checkpoints/ecg/ptbxl_xresnet1d101.pt
+preprocessing:
+  filtering: configured_in_training_artifact
+  normalization: configured_in_training_artifact

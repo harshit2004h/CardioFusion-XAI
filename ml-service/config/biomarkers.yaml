@@ -1,0 +1,15 @@
+datasets:
+  - zheen
+  - uci_heart_failure
+  - mi_complications
+  - framingham
+inference:
+  checkpoint: checkpoints/biomarkers/biomarker_ft_transformer.pt
+  preprocessing_artifacts: checkpoints/biomarkers/preprocessing
+  require_fitted_preprocessing: true
+features:
+  aliases:
+    troponin: ["troponin", "troponin i", "troponin-i", "ctni"]
+    ck_mb: ["ck-mb", "ck mb"]
+    serum_sodium: ["sodium", "serum sodium", "na+"]
+    serum_creatinine: ["creatinine", "serum creatinine"]
