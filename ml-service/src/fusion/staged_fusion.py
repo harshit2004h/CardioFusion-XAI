@@ -9,7 +9,12 @@ class StagedFusionEngine:
         self,
         registry: dict,
     ):
-        self.registry = registry
+        if "diseases" in registry:
+            self.registry = registry["diseases"]
+            self.settings = registry.get("settings", {})
+        else:
+            self.registry = registry
+            self.settings = {}
 
     def _base_confidence(
         self,
@@ -66,7 +71,19 @@ class StagedFusionEngine:
             if value is not None:
                 return float(value)
 
+        for output_name in config.get("primary_output_group", []):
+            value = modality_predictions.get(output_name)
+            if value is not None:
+                return max(
+                    float(modality_predictions.get(name, 0.0))
+                    for name in config["primary_output_group"]
+                )
+
         return None
+
+    def diseases(self):
+        """Return only configured disease identifiers."""
+        return tuple(self.registry)
 
     def evaluate_disease(
         self,
@@ -214,20 +231,15 @@ class StagedFusionEngine:
                 )
                 continue
 
-            primary_positive = (
-                primary_probability
-                >= config.get(
-                    "threshold",
-                    {}
-                ).get(
-                    "positive_probability",
-                    0.50,
-                )
+            threshold = self.settings.get(
+                "agreement", {}
+            ).get(
+                "threshold",
+                0.50,
             )
-
-            confirmatory_positive = (
-                confirmatory_probability
-                >= 0.50
+            threshold = config.get(
+                "agreement_threshold",
+                threshold,
             )
 
             result.setdefault(
@@ -241,10 +253,10 @@ class StagedFusionEngine:
                 confirmatory_probability
             )
 
-            if (
-                primary_positive
-                == confirmatory_positive
-            ):
+            if abs(
+                float(primary_probability)
+                - float(confirmatory_probability)
+            ) <= float(threshold):
 
                 result["status"] = (
                     "agreement"
@@ -293,5 +305,5 @@ class StagedFusionEngine:
                 disease,
                 predictions,
             )
-            for disease in self.registry
+            for disease in self.diseases()
         }

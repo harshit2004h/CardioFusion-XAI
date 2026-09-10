@@ -1,35 +1,286 @@
 [
   {
-    "disease": "settings",
-    "display_name": "settings",
+    "disease": "acute_mi",
+    "display_name": "Acute Myocardial Infarction",
     "risk": null,
     "confidence": "LOW",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
-      "Upload None."
+      "Upload biomarkers."
     ]
   },
   {
-    "disease": "diseases",
-    "display_name": "diseases",
+    "disease": "myocardial_ischemia",
+    "display_name": "Myocardial Ischemia",
     "risk": null,
     "confidence": "LOW",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
-      "Upload None."
+      "Upload ecg."
     ]
   },
   {
-    "disease": "global_rules",
-    "display_name": "global_rules",
+    "disease": "st_t_abnormalities",
+    "display_name": "ST/T Abnormalities",
     "risk": null,
     "confidence": "LOW",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
-      "Upload None."
+      "Upload ecg."
     ]
+  },
+  {
+    "disease": "atrial_fibrillation",
+    "display_name": "Atrial Fibrillation",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload ecg."
+    ]
+  },
+  {
+    "disease": "vt_vf",
+    "display_name": "Ventricular Tachycardia / Ventricular Fibrillation",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "unsupported",
+    "detected_from": [],
+    "recommendations": [],
+    "message": "No sufficient general-population VT/VF ground truth in the selected datasets."
+  },
+  {
+    "disease": "bradyarrhythmia",
+    "display_name": "Bradyarrhythmia",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload ecg."
+    ]
+  },
+  {
+    "disease": "av_block",
+    "display_name": "Atrioventricular Block",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload ecg."
+    ]
+  },
+  {
+    "disease": "lbbb_rbbb",
+    "display_name": "Left / Right Bundle Branch Block",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload ecg."
+    ]
+  },
+  {
+    "disease": "other_conduction_abnormalities",
+    "display_name": "Other Conduction Abnormalities",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload ecg."
+    ]
+  },
+  {
+    "disease": "lvh_rvh",
+    "display_name": "Left / Right Ventricular Hypertrophy",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload ecg."
+    ]
+  },
+  {
+    "disease": "lv_dysfunction",
+    "display_name": "Left Ventricular Dysfunction",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload echo."
+    ]
+  },
+  {
+    "disease": "reduced_lvef",
+    "display_name": "Reduced Left Ventricular Ejection Fraction",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload echo."
+    ]
+  },
+  {
+    "disease": "reduced_ef_cardiomyopathy",
+    "display_name": "Reduced-EF Cardiomyopathy",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload echo."
+    ]
+  },
+  {
+    "disease": "hfref",
+    "display_name": "HFrEF / Reduced LV Function",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload echo."
+    ]
+  },
+  {
+    "disease": "hf_mortality",
+    "display_name": "Heart Failure Prognosis / Mortality",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload biomarkers."
+    ]
+  },
+  {
+    "disease": "cardiogenic_shock",
+    "display_name": "Cardiogenic Shock",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload biomarkers."
+    ]
+  },
+  {
+    "disease": "acute_lv_failure_pulmonary_edema",
+    "display_name": "Acute LV Failure / Pulmonary Edema",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload biomarkers."
+    ]
+  },
+  {
+    "disease": "recurrent_mi",
+    "display_name": "Recurrent Myocardial Infarction",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload biomarkers."
+    ]
+  },
+  {
+    "disease": "post_mi_arrhythmias",
+    "display_name": "Post-MI Arrhythmias",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload biomarkers."
+    ]
+  },
+  {
+    "disease": "post_mi_mortality",
+    "display_name": "Post-MI Mortality Cause",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload biomarkers."
+    ]
+  },
+  {
+    "disease": "myocardial_rupture",
+    "display_name": "Myocardial Rupture",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload biomarkers."
+    ]
+  },
+  {
+    "disease": "dressler_syndrome",
+    "display_name": "Dressler Syndrome",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload biomarkers."
+    ]
+  },
+  {
+    "disease": "chronic_hf_post_mi",
+    "display_name": "Chronic Heart Failure After MI",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload biomarkers."
+    ]
+  },
+  {
+    "disease": "post_infarction_angina",
+    "display_name": "Post-Infarction Angina",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload biomarkers."
+    ]
+  },
+  {
+    "disease": "ten_year_chd_risk",
+    "display_name": "10-Year CHD Risk",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload biomarkers."
+    ]
+  },
+  {
+    "disease": "future_hf_risk",
+    "display_name": "Future Heart Failure Risk",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "unsupported",
+    "detected_from": [],
+    "recommendations": [],
+    "message": "None of the six selected datasets provides appropriate incident/future heart-failure ground truth. UCI Heart Failure contains patients who already have diagnosed heart failure and is a mortality/prognosis dataset.\n"
   }
 ]

@@ -1,20 +1,43 @@
 from __future__ import annotations
 
 import numpy as np
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-
-from .metrices import (
-    binary_metrics,
-    multiclass_metrics,
-)
-
 from sklearn.metrics import (
-    roc_auc_score,
-    f1_score,
+    accuracy_score,
     average_precision_score,
     confusion_matrix,
+    f1_score,
+    mean_absolute_error,
+    mean_squared_error,
+    precision_score,
+    recall_score,
+    r2_score,
+    roc_auc_score,
 )
 
+
+def binary_metrics(y_true, y_prob, threshold: float = 0.5) -> dict[str, float]:
+    y_true = np.asarray(y_true, dtype=float)
+    y_prob = np.asarray(y_prob, dtype=float)
+    valid = np.isfinite(y_true) & np.isfinite(y_prob)
+    y_true = y_true[valid].astype(int)
+    y_prob = y_prob[valid]
+    if not y_true.size:
+        return {name: np.nan for name in ("auroc", "auprc", "f1", "precision", "recall")}
+    y_pred = (y_prob >= threshold).astype(int)
+    return {
+        "auroc": float(roc_auc_score(y_true, y_prob)) if np.unique(y_true).size > 1 else np.nan,
+        "auprc": float(average_precision_score(y_true, y_prob)) if np.unique(y_true).size > 1 else np.nan,
+        "f1": float(f1_score(y_true, y_pred, zero_division=0)),
+        "precision": float(precision_score(y_true, y_pred, zero_division=0)),
+        "recall": float(recall_score(y_true, y_pred, zero_division=0)),
+    }
+
+
+def multiclass_metrics(y_true, y_pred) -> dict[str, float]:
+    return {
+        "accuracy": float(accuracy_score(y_true, y_pred)),
+        "f1_macro": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
+    }
 
 def regression_metrics(
     y_true,

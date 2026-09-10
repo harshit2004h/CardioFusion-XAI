@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import torch
 
-from .metrices import (
+from .metrics import (
     binary_metrics,
     multiclass_metrics,
 )

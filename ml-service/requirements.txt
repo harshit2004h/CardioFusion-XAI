@@ -17,7 +17,6 @@ neurokit2>=0.2,<1.0
 
 # Echo / Video Processing
 opencv-python>=4.9,<5.0
-av>=12.0,<15.0
 Pillow>=10.0,<13.0
 
 # Configuration
