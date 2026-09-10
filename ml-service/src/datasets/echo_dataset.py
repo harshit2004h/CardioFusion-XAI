@@ -30,6 +30,7 @@ class EchoNetDataset(Dataset):
         self.num_frames = num_frames
         self.frame_stride = frame_stride
         self.image_size = image_size
+        self.split = split
         self.project_root = (
             Path(project_root).resolve()
             if project_root is not None
@@ -80,16 +81,13 @@ class EchoNetDataset(Dataset):
         )
 
         if total_frames >= required_frames:
-            start = np.random.randint(
-                0,
-                total_frames - required_frames + 1,
-            )
+            max_start = total_frames - required_frames
+            if self.split.lower() == "train":
+                start = np.random.randint(0, max_start + 1)
+            else:
+                start = max_start // 2
 
-            indices = (
-                start
-                + np.arange(self.num_frames)
-                * self.frame_stride
-            )
+            indices = start + np.arange(self.num_frames) * self.frame_stride
 
         else:
             indices = np.linspace(

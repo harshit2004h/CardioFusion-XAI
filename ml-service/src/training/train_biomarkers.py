@@ -34,8 +34,8 @@ def load_factory(spec: str, name: str):
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--factory", default="src.data.biomarker_dataset:build_biomarker_dataloaders")
-    p.add_argument("--model-factory", default="src.models.biomarkers:build_biomarker_model")
+    p.add_argument("--factory", required=True)
+    p.add_argument("--model-factory", required=True)
     p.add_argument("--data-root", required=True)
     p.add_argument("--artifact-dir", default="artifacts/biomarkers")
     p.add_argument("--epochs", type=int, default=40)

@@ -1,0 +1,638 @@
+# ============================================================
+# Cardio Fusion XAI - Disease Registry
+# Single source of truth for multimodal fusion/orchestration
+#
+# NOTE:
+# The modalities are independently trained on disjoint
+# patient populations. Fusion therefore uses calibrated
+# per-disease probabilities + rule-based confirmation.
+# ============================================================
+
+settings:
+  fusion_mode: "staged_rule_based"
+  upload_order:
+    - biomarkers
+    - ecg
+    - echo
+
+  probability_policy:
+    do_not_average: true
+    do_not_multiply: true
+    keep_primary_risk_as_displayed_risk: true
+
+  confidence:
+    high_min_auc: 0.90
+    moderate_min_auc: 0.75
+    low_below_auc: 0.75
+
+  agreement:
+    threshold: 0.50
+    upgrade_on_agreement: true
+    cap_at_moderate_on_disagreement: true
+
+
+# ============================================================
+# 1. CORONARY & ISCHEMIC DISEASE
+# ============================================================
+
+diseases:
+
+  acute_mi:
+    display_name: "Acute Myocardial Infarction"
+    category: "coronary_ischemic"
+
+    status: "supported"
+
+    primary_modality: "biomarkers"
+    primary_dataset: "zheen"
+    primary_output: "acute_mi"
+
+    confirmatory_modalities:
+      - "ecg"
+
+    confirmatory:
+      ecg:
+        dataset: "ptbxl"
+        output: "MI"
+        role: "confirmation_localization"
+
+    echo:
+      role: "supportive_only"
+
+    threshold:
+      positive_probability: 0.50
+
+    notes:
+      - "Blood/serum provides the primary Acute MI signal."
+      - "PTB-XL MI supports ECG confirmation/localization."
+      - "Echo does not directly diagnose MI in EchoNet."
+
+
+  myocardial_ischemia:
+    display_name: "Myocardial Ischemia"
+    category: "coronary_ischemic"
+
+    status: "supported_weaker"
+
+    primary_modality: "ecg"
+    primary_dataset: "ptbxl"
+    primary_output: "STTC"
+
+    confirmatory_modalities: []
+
+    ecg:
+      supporting_subclasses:
+        - "ISC_"
+        - "NST_"
+
+    threshold:
+      positive_probability: 0.50
+
+    notes:
+      - "ECG-led task."
+      - "No direct blood biomarker for ischemia is established in the selected datasets."
+      - "Treat blood findings as risk context, not direct diagnosis."
+
+
+  st_t_abnormalities:
+    display_name: "ST/T Abnormalities"
+    category: "coronary_ischemic"
+
+    status: "supported"
+
+    primary_modality: "ecg"
+    primary_dataset: "ptbxl"
+    primary_output: "STTC"
+
+    confirmatory_modalities: []
+
+    threshold:
+      positive_probability: 0.50
+
+
+# ============================================================
+# 2. ELECTRICAL & ARRHYTHMIC DISEASE
+# ============================================================
+
+  atrial_fibrillation:
+    display_name: "Atrial Fibrillation"
+    category: "electrical_arrhythmic"
+
+    status: "supported"
+
+    primary_modality: "ecg"
+    primary_dataset: "ptbxl"
+    primary_output: "AFIB"
+
+    confirmatory_modalities: []
+
+    related_labels:
+      - "AFLT"
+
+    threshold:
+      positive_probability: 0.50
+
+    notes:
+      - "ECG is the diagnostic modality."
+      - "Blood potassium/sodium may be risk modifiers but are not diagnostic."
+
+
+  vt_vf:
+    display_name: "Ventricular Tachycardia / Ventricular Fibrillation"
+    category: "electrical_arrhythmic"
+
+    status: "unsupported"
+
+    reason: "No sufficient general-population VT/VF ground truth in the selected datasets."
+
+    data_available:
+      dataset: "mi_complications"
+      labels:
+        - "JELUD_TAH"
+        - "FIBR_JELUD"
+
+    notes:
+      - "These labels occur only in already-hospitalized post-MI patients."
+      - "Do not expose a general-population VT/VF probability."
+
+
+  bradyarrhythmia:
+    display_name: "Bradyarrhythmia"
+    category: "electrical_arrhythmic"
+
+    status: "supported"
+
+    primary_modality: "ecg"
+    primary_dataset: "ptbxl"
+    primary_output: "SBRAD"
+
+    confirmatory_modalities: []
+
+    threshold:
+      positive_probability: 0.50
+
+
+  av_block:
+    display_name: "Atrioventricular Block"
+    category: "electrical_arrhythmic"
+
+    status: "supported"
+
+    primary_modality: "ecg"
+    primary_dataset: "ptbxl"
+
+    primary_output_group:
+      - "AVB"
+
+    specific_labels:
+      - "first_degree"
+      - "second_degree"
+      - "third_degree"
+
+    confirmatory_modalities: []
+
+    threshold:
+      positive_probability: 0.50
+
+
+  lbbb_rbbb:
+    display_name: "Left / Right Bundle Branch Block"
+    category: "electrical_arrhythmic"
+
+    status: "supported"
+
+    primary_modality: "ecg"
+    primary_dataset: "ptbxl"
+
+    primary_output_group:
+      - "CLBBB"
+      - "ILBBB"
+      - "CRBBB"
+      - "IRBBB"
+
+    confirmatory_modalities: []
+
+    threshold:
+      positive_probability: 0.50
+
+
+  other_conduction_abnormalities:
+    display_name: "Other Conduction Abnormalities"
+    category: "electrical_arrhythmic"
+
+    status: "supported"
+
+    primary_modality: "ecg"
+    primary_dataset: "ptbxl"
+
+    primary_output_group:
+      - "LAFB"
+      - "LPFB"
+      - "WPW"
+      - "IVCD"
+
+    confirmatory_modalities: []
+
+    threshold:
+      positive_probability: 0.50
+
+
+# ============================================================
+# 3. STRUCTURAL & FUNCTIONAL DISEASE
+# ============================================================
+
+  lvh_rvh:
+    display_name: "Left / Right Ventricular Hypertrophy"
+    category: "structural_functional"
+
+    status: "supported_weaker"
+
+    primary_modality: "ecg"
+    primary_dataset: "ptbxl"
+    primary_output: "HYP"
+
+    confirmatory_modalities: []
+
+    echo:
+      role: "not_confirmatory"
+      reason: "EchoNet does not provide wall-thickness or LV-mass ground truth."
+
+    threshold:
+      positive_probability: 0.50
+
+
+  lv_dysfunction:
+    display_name: "Left Ventricular Dysfunction"
+    category: "structural_functional"
+
+    status: "supported"
+
+    primary_modality: "echo"
+    primary_dataset: "echonet"
+
+    primary_output:
+      type: "derived_from_ef"
+      threshold_ef: 50.0
+      rule: "EF < 50%"
+
+    confirmatory_modalities: []
+
+    threshold:
+      positive_probability: 0.50
+
+
+  reduced_lvef:
+    display_name: "Reduced Left Ventricular Ejection Fraction"
+    category: "structural_functional"
+
+    status: "supported"
+
+    primary_modality: "echo"
+    primary_dataset: "echonet"
+
+    primary_output:
+      type: "continuous"
+      field: "EF"
+
+    derived_flag:
+      threshold_ef: 50.0
+      rule: "EF < 50%"
+
+    confirmatory_modalities: []
+
+
+# ============================================================
+# 4. CARDIOMYOPATHY & HEART FAILURE
+# ============================================================
+
+  reduced_ef_cardiomyopathy:
+    display_name: "Reduced-EF Cardiomyopathy"
+    category: "cardiomyopathy_heart_failure"
+
+    status: "supported"
+
+    primary_modality: "echo"
+    primary_dataset: "echonet"
+
+    primary_output:
+      type: "derived_from_ef"
+      threshold_ef: 40.0
+      rule: "EF < 40%"
+
+    confirmatory_modalities: []
+
+
+  hfref:
+    display_name: "HFrEF / Reduced LV Function"
+    category: "cardiomyopathy_heart_failure"
+
+    status: "supported"
+
+    primary_modality: "echo"
+    primary_dataset: "echonet"
+
+    primary_output:
+      type: "derived_from_ef"
+      threshold_ef: 40.0
+      rule: "EF < 40%"
+
+    confirmatory_modalities:
+      - "biomarkers"
+
+    confirmatory:
+      biomarkers:
+        dataset: "uci_heart_failure"
+        role: "supportive_confirmation"
+        outputs:
+          - "serum_creatinine"
+          - "serum_sodium"
+
+    threshold:
+      positive_probability: 0.50
+
+
+  hf_mortality:
+    display_name: "Heart Failure Prognosis / Mortality"
+    category: "cardiomyopathy_heart_failure"
+
+    status: "supported"
+
+    primary_modality: "biomarkers"
+    primary_dataset: "uci_heart_failure"
+    primary_output: "hf_mortality"
+
+    confirmatory_modalities: []
+
+    excluded_features:
+      - "time"
+
+    threshold:
+      positive_probability: 0.50
+
+    notes:
+      - "UCI Heart Failure represents mortality in patients with diagnosed heart failure."
+      - "The follow-up time variable must not be used as a predictor."
+
+
+# ============================================================
+# 5. POST-MI COMPLICATIONS
+# ============================================================
+
+  cardiogenic_shock:
+    display_name: "Cardiogenic Shock"
+    category: "post_mi_complications"
+
+    status: "supported"
+
+    primary_modality: "biomarkers"
+    primary_dataset: "mi_complications"
+    primary_output: "K_SH_POST"
+
+    confirmatory_modalities: []
+
+    additional_evidence:
+      mortality_cause:
+        dataset: "mi_complications"
+        output: "LET_IS"
+        relationship: "supportive"
+
+    threshold:
+      positive_probability: 0.50
+
+
+  acute_lv_failure_pulmonary_edema:
+    display_name: "Acute LV Failure / Pulmonary Edema"
+    category: "post_mi_complications"
+
+    status: "supported"
+
+    primary_modality: "biomarkers"
+    primary_dataset: "mi_complications"
+
+    primary_outputs:
+      - "O_L_POST"
+      - "OTEK_LANC"
+
+    confirmatory_modalities: []
+
+    threshold:
+      positive_probability: 0.50
+
+
+  recurrent_mi:
+    display_name: "Recurrent Myocardial Infarction"
+    category: "post_mi_complications"
+
+    status: "supported"
+
+    primary_modality: "biomarkers"
+    primary_dataset: "mi_complications"
+    primary_output: "REC_IM"
+
+    confirmatory_modalities: []
+
+    threshold:
+      positive_probability: 0.50
+
+
+  post_mi_arrhythmias:
+    display_name: "Post-MI Arrhythmias"
+    category: "post_mi_complications"
+
+    status: "supported"
+
+    primary_modality: "biomarkers"
+    primary_dataset: "mi_complications"
+
+    outputs:
+      atrial_fibrillation:
+        source_label: "FIBR_PREDS"
+
+      supraventricular_tachycardia:
+        source_label: "PREDS_TAH"
+
+      ventricular_tachycardia:
+        source_label: "JELUD_TAH"
+
+      ventricular_fibrillation:
+        source_label: "FIBR_JELUD"
+
+      third_degree_av_block:
+        source_label: "A_V_BLOK"
+
+    confirmatory_modalities: []
+
+    notes:
+      - "This is specifically a post-MI complication task."
+      - "Do not treat these outputs as general-population arrhythmia detectors."
+
+
+  post_mi_mortality:
+    display_name: "Post-MI Mortality Cause"
+    category: "post_mi_complications"
+
+    status: "supported"
+
+    primary_modality: "biomarkers"
+    primary_dataset: "mi_complications"
+    primary_output: "LET_IS"
+
+    output_type: "multiclass"
+
+    confirmatory_modalities: []
+
+    threshold:
+      type: "multiclass"
+
+
+  myocardial_rupture:
+    display_name: "Myocardial Rupture"
+    category: "post_mi_complications"
+
+    status: "supported"
+
+    primary_modality: "biomarkers"
+    primary_dataset: "mi_complications"
+    primary_output: "RAZRIV"
+
+    confirmatory_modalities: []
+
+    threshold:
+      positive_probability: 0.50
+
+
+  dressler_syndrome:
+    display_name: "Dressler Syndrome"
+    category: "post_mi_complications"
+
+    status: "supported"
+
+    primary_modality: "biomarkers"
+    primary_dataset: "mi_complications"
+    primary_output: "DRESSLER"
+
+    confirmatory_modalities: []
+
+    threshold:
+      positive_probability: 0.50
+
+
+  chronic_hf_post_mi:
+    display_name: "Chronic Heart Failure After MI"
+    category: "post_mi_complications"
+
+    status: "supported"
+
+    primary_modality: "biomarkers"
+    primary_dataset: "mi_complications"
+    primary_output: "ZSN"
+
+    confirmatory_modalities: []
+
+    threshold:
+      positive_probability: 0.50
+
+
+  post_infarction_angina:
+    display_name: "Post-Infarction Angina"
+    category: "post_mi_complications"
+
+    status: "supported"
+
+    primary_modality: "biomarkers"
+    primary_dataset: "mi_complications"
+    primary_output: "P_IM_STEN"
+
+    confirmatory_modalities: []
+
+    threshold:
+      positive_probability: 0.50
+
+
+# ============================================================
+# 6. CARDIOVASCULAR RISK
+# ============================================================
+
+  ten_year_chd_risk:
+    display_name: "10-Year CHD Risk"
+    category: "cardiovascular_risk"
+
+    status: "supported_with_ceiling"
+
+    primary_modality: "biomarkers"
+    primary_dataset: "framingham"
+    primary_output: "ten_year_chd_risk"
+
+    confirmatory_modalities: []
+
+    expected_auc_ceiling: 0.70
+
+    confidence:
+      max_level: "MODERATE"
+
+    threshold:
+      positive_probability: 0.50
+
+    notes:
+      - "Do not present this as near-perfect classification."
+      - "The project design specifies a visible performance ceiling."
+
+
+# ============================================================
+# EXPLICITLY UNSUPPORTED
+# ============================================================
+
+  future_hf_risk:
+    display_name: "Future Heart Failure Risk"
+    category: "cardiovascular_risk"
+
+    status: "unsupported"
+
+    reason: >
+      None of the six selected datasets provides appropriate
+      incident/future heart-failure ground truth. UCI Heart Failure
+      contains patients who already have diagnosed heart failure
+      and is a mortality/prognosis dataset.
+
+
+# ============================================================
+# GLOBAL SAFETY / PRESENTATION RULES
+# ============================================================
+
+global_rules:
+
+  unsupported_policy:
+    return_risk: false
+    return_confidence: "LOW"
+    show_reason: true
+
+  missing_primary_modality:
+    risk: null
+    confidence: "LOW"
+    recommendation: "Upload primary modality."
+
+  missing_confirmatory_modality:
+    keep_primary_risk: true
+    keep_primary_confidence: true
+    add_recommendation: true
+
+  confirmatory_agreement:
+    keep_primary_probability: true
+    upgrade_confidence: true
+
+  confirmatory_disagreement:
+    keep_primary_probability: true
+    cap_confidence: "MODERATE"
+    show_both_evidences: true
+    do_not_average: true
+
+  echo_policy:
+    ef_is_primary_echo_signal: true
+    no_direct_mi_label: true
+    no_direct_lvh_mass_label: true
+    no_direct_valve_label: true
+    no_direct_wall_motion_label: true
+
+  vt_vf_policy:
+    general_population_detector: false
+    post_mi_complication_outputs_allowed: true

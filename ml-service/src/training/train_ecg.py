@@ -30,8 +30,8 @@ def load_factory(spec: str):
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--factory", default="src.data.ecg_dataset:build_ecg_dataloaders")
-    p.add_argument("--model-factory", default="src.models.ecg:build_ecg_model")
+    p.add_argument("--factory", required=True)
+    p.add_argument("--model-factory", required=True)
     p.add_argument("--data-root", required=True)
     p.add_argument("--artifact-dir", default="artifacts/ecg")
     p.add_argument("--epochs", type=int, default=50)

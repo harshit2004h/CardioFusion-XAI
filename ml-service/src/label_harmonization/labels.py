@@ -3,7 +3,7 @@ CANONICAL_DISEASES = [
     "acute_mi", "myocardial_ischemia", "st_t_abnormalities",
     "atrial_fibrillation", "bradyarrhythmia", "av_block",
     "lbbb_rbbb", "conduction_abnormalities", "lvh_rvh",
-    "lv_dysfunction", "reduced_lvef", "hfref_cardiomyopathy",
+    "lv_dysfunction", "reduced_lvef", "hfref",
     "hf_mortality", "cardiogenic_shock", "acute_lv_failure",
     "recurrent_mi", "post_mi_arrhythmias", "post_mi_mortality",
     "10_year_chd_risk"
@@ -55,5 +55,5 @@ def get_echonet_targets(ef_value: float) -> dict:
     return {
         "reduced_lvef": ef_value,
         "lv_dysfunction": int(ef_value < 50.0),
-        "hfref_cardiomyopathy": int(ef_value < 40.0)
+        "hfref": int(ef_value < 40.0)
     }

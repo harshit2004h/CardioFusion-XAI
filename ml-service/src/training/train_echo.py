@@ -43,8 +43,8 @@ class EFRegressionLoss(nn.Module):
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--factory", default="src.data.echo_dataset:build_echo_dataloaders")
-    p.add_argument("--model-factory", default="src.models.echo:build_echo_model")
+    p.add_argument("--factory", required=True)
+    p.add_argument("--model-factory", required=True)
     p.add_argument("--data-root", required=True)
     p.add_argument("--artifact-dir", default="artifacts/echo")
     p.add_argument("--epochs", type=int, default=30)

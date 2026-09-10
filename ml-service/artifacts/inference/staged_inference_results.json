@@ -1,0 +1,35 @@
+[
+  {
+    "disease": "settings",
+    "display_name": "settings",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload None."
+    ]
+  },
+  {
+    "disease": "diseases",
+    "display_name": "diseases",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload None."
+    ]
+  },
+  {
+    "disease": "global_rules",
+    "display_name": "global_rules",
+    "risk": null,
+    "confidence": "LOW",
+    "status": "primary_missing",
+    "detected_from": [],
+    "recommendations": [
+      "Upload None."
+    ]
+  }
+]

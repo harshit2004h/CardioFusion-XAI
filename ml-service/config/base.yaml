@@ -366,7 +366,7 @@ echo:
   preprocessing:
 
     normalization:
-      method: "imagenet"
+      method: "kinetics_400"
 
     resize:
       enabled: true
@@ -420,7 +420,7 @@ echo:
       enabled: true
       threshold_percent: 40.0
 
-    hfrEF:
+    hfref:
       enabled: true
       threshold_percent: 40.0
 

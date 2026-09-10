@@ -75,7 +75,7 @@ preprocessing:
 
   normalization:
 
-    method: "imagenet"
+    method: "kinetics_400"
 
   color:
 
@@ -244,7 +244,7 @@ derived_outputs:
 
     unit: "percent"
 
-    canonical_name: "hfrEF"
+    canonical_name: "hfref"
 
 
 # ============================================================
