@@ -1,48 +1,177 @@
+from pathlib import Path
+
+import cv2
+import numpy as np
+import pandas as pd
 import torch
 from torch.utils.data import Dataset
-import pandas as pd
-import os
-import cv2
+
 
 class EchoNetDataset(Dataset):
-    """
-    Loads EchoNet-Dynamic videos and continuous EF targets.
-    """
-    def __init__(self, metadata_df: pd.DataFrame, video_dir: str, transform=None):
-        self.df = metadata_df.reset_index(drop=True)
-        self.video_dir = video_dir
-        self.transform = transform
+    def __init__(
+        self,
+        manifest,
+        split="test",
+        num_frames=32,
+        frame_stride=4,
+        image_size=112,
+        project_root=None,
+    ):
+        if isinstance(manifest, (str, Path)):
+            manifest = pd.read_csv(manifest)
+
+        self.manifest = manifest.copy()
+
+        if "split" in self.manifest.columns:
+            self.manifest = self.manifest[
+                self.manifest["split"].astype(str).str.lower() == split.lower()
+            ].reset_index(drop=True)
+
+        self.num_frames = num_frames
+        self.frame_stride = frame_stride
+        self.image_size = image_size
+        self.project_root = (
+            Path(project_root).resolve()
+            if project_root is not None
+            else None
+        )
+
+        required = ["video_path", "EF"]
+
+        missing = [
+            col for col in required
+            if col not in self.manifest.columns
+        ]
+
+        if missing:
+            raise ValueError(
+                f"Missing required manifest columns: {missing}"
+            )
 
     def __len__(self):
-        return len(self.df)
+        return len(self.manifest)
 
-    def __getitem__(self, idx):
-        row = self.df.iloc[idx]
-        filename = row['FileName']
-        ef_target = torch.tensor([row['EF']], dtype=torch.float32)
-        
-        # Load raw video tensor (simplified cv2 load; adapt if using torchvision.io)
-        video_path = os.path.join(self.video_dir, f"{filename}.avi")
-        cap = cv2.VideoCapture(video_path)
-        frames = []
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret: break
-            # BGR to RGB, then HWC to CHW
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frames.append(torch.from_numpy(frame).permute(2, 0, 1))
-        cap.release()
-        
-        # Stack to (C, T, H, W)
-        if len(frames) > 0:
-            video_tensor = torch.stack(frames, dim=1) 
+    def _load_video(self, video_path):
+        video_path = Path(video_path)
+
+        if not video_path.is_absolute() and self.project_root is not None:
+            video_path = self.project_root / video_path
+
+        video_path = video_path.resolve()
+        cap = cv2.VideoCapture(str(video_path))
+
+        if not cap.isOpened():
+            raise RuntimeError(
+                f"Could not open video: {video_path}"
+            )
+
+        total_frames = int(
+            cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        )
+
+        if total_frames <= 0:
+            cap.release()
+            raise RuntimeError(
+                f"Video contains no frames: {video_path}"
+            )
+
+        required_frames = (
+            self.num_frames * self.frame_stride
+        )
+
+        if total_frames >= required_frames:
+            start = np.random.randint(
+                0,
+                total_frames - required_frames + 1,
+            )
+
+            indices = (
+                start
+                + np.arange(self.num_frames)
+                * self.frame_stride
+            )
+
         else:
-            video_tensor = torch.zeros((3, 32, 112, 112))
+            indices = np.linspace(
+                0,
+                total_frames - 1,
+                self.num_frames,
+                dtype=np.int64,
+            )
 
-        if self.transform:
-            video_tensor = self.transform(video_tensor)
+        frames = []
+
+        for index in indices:
+            cap.set(
+                cv2.CAP_PROP_POS_FRAMES,
+                int(index),
+            )
+
+            success, frame = cap.read()
+
+            if not success:
+                cap.release()
+                raise RuntimeError(
+                    f"Could not read frame {index} "
+                    f"from {video_path}"
+                )
+
+            frame = cv2.cvtColor(
+                frame,
+                cv2.COLOR_BGR2GRAY,
+            )
+
+            frame = cv2.resize(
+                frame,
+                (self.image_size, self.image_size),
+                interpolation=cv2.INTER_AREA,
+            )
+
+            frame = (
+                frame.astype(np.float32)
+                / 255.0
+            )
+
+            frame = np.stack(
+                [frame, frame, frame],
+                axis=0,
+            )
+
+            frames.append(frame)
+
+        cap.release()
+
+        video = np.stack(
+            frames,
+            axis=1,
+        )
+
+        return video
+    
+    def __getitem__(self, idx):
+        row = self.manifest.iloc[idx]
+
+        video_path = Path(row["video_path"])
+
+        if not video_path.is_absolute() and self.project_root is not None:
+            video_path = self.project_root / video_path
+
+        video_path = video_path.resolve()
+
+        video = self._load_video(video_path)
+
+        video = torch.tensor(
+            video,
+            dtype=torch.float32,
+        )
+
+        ef = torch.tensor(
+            float(row["EF"]),
+            dtype=torch.float32,
+        )
 
         return {
-            'video': video_tensor,
-            'ef_target': ef_target
+            "video": video,
+            "ef": ef,
+            "video_path": str(video_path),
         }
