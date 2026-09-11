@@ -90,6 +90,22 @@ class Bottleneck1D(nn.Module):
         return out
 
 
+# Block-count configurations, keyed by nominal depth.
+# NOTE: 101 is the original hardcoded configuration. It is a huge amount of
+# capacity (~40M+ params) for the ~15k-record PTB-XL training split used in
+# this project and is the primary driver of the reported ECG overfitting
+# (train loss keeps falling while val loss plateaus/rises). Prefer 18 or 34
+# unless you have verified more data / stronger regularization closes the
+# train/val gap.
+_DEPTH_CONFIGS: dict[int, list[int]] = {
+    18: [1, 1, 1, 1],
+    34: [2, 2, 2, 2],
+    50: [3, 4, 6, 3],
+    101: [3, 4, 23, 3],
+    152: [3, 8, 36, 3],
+}
+
+
 class XResNet1D(
     nn.Module
 ):
@@ -114,8 +130,19 @@ class XResNet1D(
         input_channels: int = 12,
         num_diagnostic_classes: int = 5,
         num_rhythm_classes: int = 0,
+        depth: int = 18,
+        dropout: float = 0.20,
     ):
         super().__init__()
+
+        if depth not in _DEPTH_CONFIGS:
+            raise ValueError(
+                f"Unsupported depth {depth}. "
+                f"Choose one of {sorted(_DEPTH_CONFIGS)}."
+            )
+
+        blocks_per_stage = _DEPTH_CONFIGS[depth]
+        self.depth = depth
 
         self.in_channels = 64
 
@@ -145,28 +172,27 @@ class XResNet1D(
             ),
         )
 
-        # ResNet-101-style configuration
         self.layer1 = self._make_layer(
             planes=64,
-            blocks=3,
+            blocks=blocks_per_stage[0],
             stride=1,
         )
 
         self.layer2 = self._make_layer(
             planes=128,
-            blocks=4,
+            blocks=blocks_per_stage[1],
             stride=2,
         )
 
         self.layer3 = self._make_layer(
             planes=256,
-            blocks=23,
+            blocks=blocks_per_stage[2],
             stride=2,
         )
 
         self.layer4 = self._make_layer(
             planes=512,
-            blocks=3,
+            blocks=blocks_per_stage[3],
             stride=2,
         )
 
@@ -180,6 +206,11 @@ class XResNet1D(
         )
 
         self.features = feature_dim
+
+        # Config specifies dropout=0.20 for the ECG branch, but no dropout
+        # was previously wired into the model at all. Applied on the pooled
+        # feature vector immediately before the task heads.
+        self.dropout = nn.Dropout(p=dropout)
 
         self.heads = ECGMultiTaskHeads(
             input_dim=feature_dim,
@@ -324,5 +355,7 @@ class XResNet1D(
         out = out.flatten(
             1
         )
+
+        out = self.dropout(out)
 
         return self.heads(out)
