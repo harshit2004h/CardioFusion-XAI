@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../db.js";
 import { syncProfile } from "../middleware/profile.js";
 import { uploadAsset } from "../services/cloudinary.js";
