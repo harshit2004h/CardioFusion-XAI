@@ -1,69 +1,72 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+import { useEffect, useMemo, useState } from "react";
+import { Activity, ArrowUpRight, Check, ChevronRight, FileHeart, FlaskConical, History, LockKeyhole, Menu, Settings, Sparkles, UploadCloud, Video, X } from "lucide-react";
+import { SignInButton, SignUpButton, UserButton, useAuth, useUser } from "@clerk/nextjs";
+
+type Risk = { display_name?: string; risk: number | null };
+type Report = { id: string; label: string; status: string; modalities: string[]; result?: { disease_results?: Risk[]; modalities?: Record<string, { status?: string; available?: boolean }> }; recommendations?: { source?: string; summary?: string; recommendations?: string[] }; createdAt: string };
+const apiUrl = process.env.NEXT_PUBLIC_SERVER_URL ?? "http://localhost:4000";
+
+function Brand() {
+  return <div className="brand"><span className="brand-mark"><Activity size={18} /></span><span>cardio<span>fusion</span></span></div>;
 }
+
+function Landing() {
+  const clerkReady = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+  const signIn = clerkReady ? <SignInButton mode="modal"><button className="quiet-button">Sign in</button></SignInButton> : <button className="quiet-button">Sign in</button>;
+  const signUp = clerkReady ? <SignUpButton mode="modal"><button className="dark-button">Create workspace <ArrowUpRight size={15} /></button></SignUpButton> : <button className="dark-button">Create workspace <ArrowUpRight size={15} /></button>;
+  return <main className="landing">
+    <nav className="landing-nav"><Brand /><div className="nav-links"><a href="#method">The method</a><a href="#privacy">Privacy</a><a href="#about">About</a></div><div className="nav-actions">{signIn}{signUp}</div></nav>
+    <section className="hero"><div className="hero-copy fade-up"><div className="eyebrow">A quieter way to read the heart</div><h1 className="serif">Evidence,<br /><em>held together.</em></h1><p>CardioFusion brings blood work, ECG signals, and echo video into one private evidence workspace. See what each modality can say, where it is uncertain, and what deserves a closer look.</p><div className="hero-actions">{clerkReady ? <SignUpButton mode="modal"><button className="coral-button">Open your workspace <ArrowUpRight size={16} /></button></SignUpButton> : <button className="coral-button">Open your workspace <ArrowUpRight size={16} /></button>}<a href="#method" className="text-link">See how it works <ChevronRight size={16} /></a></div></div><div className="hero-art fade-up"><div className="art-note">Your evidence, in context <span>01</span></div><div className="heart-grid"><div className="pulse pulse-one" /><div className="pulse pulse-two" /><div className="pulse pulse-three" /><div className="axis axis-x" /><div className="axis axis-y" /><div className="orb orb-one" /><div className="orb orb-two" /><div className="orb orb-three" /><div className="art-caption"><span>3</span> modalities<br /><small>one considered view</small></div></div><div className="art-foot"><span>CF / 01</span><span>EST. 2026</span><span>PRIVATE BY DEFAULT</span></div></div></section>
+    <section className="proof-strip"><div><span className="proof-number">01</span><b>Upload what you have</b><p>Blood report, ECG, echo video. Nothing needs to arrive all at once.</p></div><div><span className="proof-number">02</span><b>Keep evidence distinct</b><p>Each expert model keeps its own limits. Fusion happens at the evidence layer.</p></div><div><span className="proof-number">03</span><b>Leave with a next step</b><p>Understand what was found, what is missing, and what to discuss.</p></div></section>
+    <section className="method-section" id="method"><div><div className="eyebrow">The method</div><h2 className="serif">No single score<br />pretends to know everything.</h2></div><div className="method-copy"><p>Different evidence deserves different experts. CardioFusion keeps those voices separate, calibrates them, and only then places them beside one another.</p><div className="method-lines"><span>Blood / clinical <b>primary signal</b></span><span>ECG <b>electrical evidence</b></span><span>Echo <b>functional context</b></span></div></div></section>
+    <footer className="landing-footer"><Brand /><span>Built for careful questions, not instant certainty.</span></footer>
+  </main>;
+}
+
+function apiFetch(path: string, token: string, options: RequestInit = {}) { return fetch(`${apiUrl}${path}`, { ...options, headers: { ...(options.headers ?? {}), Authorization: `Bearer ${token}` } }); }
+
+function Dashboard() {
+  const { getToken } = useAuth();
+  const { user } = useUser();
+  const [tab, setTab] = useState("overview");
+  const [reports, setReports] = useState<Report[]>([]);
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+  const [profile, setProfile] = useState({ phone: "", address: "", username: "" });
+  const [files, setFiles] = useState<Record<string, File | null>>({ biomarkers: null, ecg: null, echo: null });
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+
+  async function load() { const token = await getToken(); if (!token) return; const [reportResponse, profileResponse] = await Promise.all([apiFetch("/api/reports", token), apiFetch("/api/profile", token)]); if (reportResponse.ok) setReports((await reportResponse.json()).reports); if (profileResponse.ok) { const data = await profileResponse.json(); setProfile({ phone: data.user.phone ?? "", address: data.user.address ?? "", username: data.user.username ?? "" }); } }
+  // Hydrate the authenticated workspace from the API after Clerk resolves.
+  // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
+  useEffect(() => { void load(); }, [user]);
+  const active = reports[0];
+  const selectedReport = reports.find((report) => report.id === selectedReportId) ?? active;
+  const latestRisk = active?.result?.disease_results?.filter((item) => item.risk !== null).slice(0, 2) ?? [];
+  const chartPoints = useMemo(() => reports.slice(0, 8).reverse().map((report, index) => ({ x: 10 + index * 12, y: 76 - ((report.result?.disease_results?.find((item) => item.risk !== null)?.risk ?? .2) * 55) })), [reports]);
+
+  async function submitReport() { const token = await getToken(); if (!token) return; const chosen = Object.entries(files).filter(([, file]) => file); if (!chosen.length) { setMessage("Choose at least one report first."); return; } setBusy(true); setMessage("Uploading and reading your evidence..."); const form = new FormData(); chosen.forEach(([key, file]) => form.append(key, file!)); form.append("label", "Cardiovascular assessment"); const response = await apiFetch("/api/reports", token, { method: "POST", body: form }); setBusy(false); if (response.ok) { setFiles({ biomarkers: null, ecg: null, echo: null }); setMessage("Assessment complete. Your evidence is ready."); await load(); setTab("overview"); } else setMessage("We could not complete this assessment. Check that the service is running."); }
+  async function saveProfile(event: React.FormEvent) { event.preventDefault(); const token = await getToken(); if (!token) return; await apiFetch("/api/profile", token, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(profile) }); setMessage("Settings saved."); }
+
+  return <main className="workspace"><aside className="sidebar"><Brand /><div className="sidebar-user"><div className="avatar">{user?.firstName?.[0] ?? user?.emailAddresses[0]?.emailAddress[0]?.toUpperCase()}</div><div><b>{user?.firstName ?? "Your workspace"}</b><small>Private account</small></div></div><nav className="side-nav"><button className={tab === "overview" ? "active" : ""} onClick={() => setTab("overview")}><Activity size={17} /> Overview</button><button className={tab === "new" ? "active" : ""} onClick={() => setTab("new")}><UploadCloud size={17} /> New assessment</button><button className={tab === "history" ? "active" : ""} onClick={() => setTab("history")}><History size={17} /> History <span>{reports.length}</span></button><button className={tab === "settings" ? "active" : ""} onClick={() => setTab("settings")}><Settings size={17} /> Settings</button></nav><div className="sidebar-bottom"><div className="privacy-note"><LockKeyhole size={15} /><span>Your data stays yours.<br /><small>Private by default.</small></span></div><UserButton afterSignOutUrl="/" /></div></aside><section className="workspace-main"><header className="workspace-header"><div><div className="eyebrow">{tab === "overview" ? "Your evidence desk" : tab === "new" ? "Add evidence" : tab === "history" ? "A record over time" : "Your details"}</div><h1 className="serif">{tab === "overview" ? `Good to see you${user?.firstName ? `, ${user.firstName}` : ""}.` : tab === "new" ? "Start an assessment." : tab === "history" ? "Your history." : "Settings."}</h1></div><button className="mobile-menu"><Menu size={20} /></button></header>{message && <div className="toast"><Check size={15} />{message}<button onClick={() => setMessage("")}><X size={14} /></button></div>}{tab === "overview" && <Overview active={active} latestRisk={latestRisk} chartPoints={chartPoints} selectedReport={selectedReport} onSelectReport={setSelectedReportId} onNew={() => setTab("new")} />}{tab === "new" && <UploadPanel files={files} setFiles={setFiles} busy={busy} submit={submitReport} />}{tab === "history" && <HistoryPanel reports={reports} onSelect={(id) => { setSelectedReportId(id); setTab("overview"); }} />}{tab === "settings" && <SettingsPanel profile={profile} setProfile={setProfile} save={saveProfile} />}</section></main>;
+}
+
+function Overview({ active, latestRisk, chartPoints, selectedReport, onSelectReport, onNew }: { active?: Report; latestRisk: Risk[]; chartPoints: Array<{ x: number; y: number }>; selectedReport?: Report; onSelectReport: (id: string) => void; onNew: () => void }) { const report = selectedReport ?? active; const results = report?.result?.disease_results?.filter((item) => item.risk !== null) ?? []; const modalities = ["biomarkers", "ecg", "echo"].map((name) => ({ name, status: report?.result?.modalities?.[name]?.status ?? (report?.modalities.includes(name) ? "received" : "not provided") })); return <div className="dashboard-content fade-up"><div className="overview-top"><div><span className="eyebrow">{selectedReportIdLabel(report, active) ? "Selected assessment" : "Latest assessment"}</span><h2 className="serif">{report ? report.label : "Your first read is waiting."}</h2><p>{report ? new Date(report.createdAt).toLocaleDateString("en", { month: "long", day: "numeric", year: "numeric" }) : "Bring whatever evidence you have. We will keep the picture honest."}</p></div><button className="coral-button" onClick={onNew}><UploadCloud size={16} /> Add evidence</button></div><div className="metric-grid"><div className="metric-card wide"><div className="metric-head"><span>Evidence confidence</span><Sparkles size={17} /></div><strong>{report ? "Review ready" : "No assessment yet"}</strong><p>{report ? `${report.modalities.length} modality${report.modalities.length === 1 ? "" : "ies"} in this read` : "Start with one report or scan."}</p><div className="confidence-bar"><i style={{ width: report ? "72%" : "8%" }} /></div></div>{latestRisk.map((item) => <div className="metric-card" key={item.display_name}><span>{item.display_name}</span><strong>{item.risk !== null ? `${Math.round(item.risk * 100)}%` : "—"}</strong><small>model-estimated risk</small></div>)}</div><div className="detail-grid"><div className="results-panel"><div className="panel-heading"><div><span className="eyebrow">Assessment readout</span><h3 className="serif">Disease results</h3></div><span className="period">{results.length} signals</span></div>{results.length ? <div className="result-list">{results.map((item) => <div className="result-row" key={item.display_name}><span>{item.display_name}</span><b>{item.risk !== null ? `${Math.round(item.risk * 100)}%` : "—"}</b><i style={{ width: `${Math.max(4, (item.risk ?? 0) * 100)}%` }} /></div>)}</div> : <div className="empty-small"><FlaskConical size={25} /><p>Results appear after an assessment.</p></div>}</div><div className="context-panel"><div className="panel-heading"><div><span className="eyebrow">Context</span><h3 className="serif">What to consider</h3></div><Sparkles size={17} /></div><p>{report?.recommendations?.summary ?? "Your next assessment will include a plain-language summary and conservative suggestions."}</p><ul>{(report?.recommendations?.recommendations ?? ["Add another modality when you have it.", "Discuss model-estimated results with a qualified clinician."]).map((recommendation) => <li key={recommendation}>{recommendation}</li>)}</ul><div className="modality-status">{modalities.map((modality) => <span key={modality.name}><i />{modality.name}<small>{modality.status}</small></span>)}</div></div></div><div className="lower-grid"><div className="trend-panel"><div className="panel-heading"><div><span className="eyebrow">Signal over time</span><h3 className="serif">Your assessment rhythm</h3></div><span className="period">Last 8 reads</span></div><div className="chart"><div className="chart-y"><span>100</span><span>50</span><span>0</span></div><div className="chart-grid"><div className="grid-line" /><div className="grid-line" /><div className="grid-line" /><svg viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points={chartPoints.map((point) => `${point.x},${point.y}`).join(" ") || "0,85 100,85"} fill="none" stroke="var(--coral)" strokeWidth="1.7" vectorEffect="non-scaling-stroke" />{chartPoints.map((point) => <circle key={point.x} cx={point.x} cy={point.y} r="1.8" fill="var(--paper)" stroke="var(--coral)" strokeWidth="1" vectorEffect="non-scaling-stroke" />)}</svg></div></div></div><div className="recent-panel"><div className="panel-heading"><div><span className="eyebrow">Recent</span><h3 className="serif">Reports</h3></div><button className="icon-button"><ArrowUpRight size={17} /></button></div>{active ? <div className="recent-row" onClick={() => onSelectReport(active.id)}><div className="report-icon"><FileHeart size={18} /></div><div><b>{active.label}</b><small>{active.modalities.join(" · ")}</small></div><span className="status-dot">{active.status.toLowerCase()}</span></div> : <div className="empty-small"><FlaskConical size={25} /><p>No reports yet</p></div>}</div></div></div>; }
+
+function selectedReportIdLabel(report?: Report, active?: Report) { return Boolean(report && active && report.id !== active.id); }
+
+function UploadPanel({ files, setFiles, busy, submit }: { files: Record<string, File | null>; setFiles: React.Dispatch<React.SetStateAction<Record<string, File | null>>>; busy: boolean; submit: () => void }) { const inputs = [{ key: "biomarkers", label: "Blood / serum", hint: "PDF, PNG or DICOM", icon: <FlaskConical size={21} /> }, { key: "ecg", label: "ECG", hint: "Image, PDF or DICOM", icon: <Activity size={21} /> }, { key: "echo", label: "Echo video", hint: "AVI, MP4 or DICOM", icon: <Video size={21} /> }]; return <div className="dashboard-content fade-up"><div className="upload-intro"><p>Upload one or more pieces of evidence. The assessment will keep missing modalities visible instead of filling gaps with assumptions.</p><span><LockKeyhole size={15} /> Encrypted in transit</span></div><div className="upload-grid">{inputs.map((input) => <label className={`upload-tile ${files[input.key] ? "chosen" : ""}`} key={input.key}>{input.icon}<b>{input.label}</b><small>{files[input.key]?.name ?? input.hint}</small>{files[input.key] ? <Check className="upload-check" size={18} /> : <UploadCloud className="upload-arrow" size={18} />}<input type="file" accept={input.key === "echo" ? ".avi,.mp4,.dcm" : ".pdf,.png,.jpg,.jpeg,.dcm"} onChange={(event) => setFiles((current) => ({ ...current, [input.key]: event.target.files?.[0] ?? null }))} /></label>)}</div><div className="upload-footer"><span>Files are sent to the analysis service only when you begin.</span><button className="coral-button" onClick={submit} disabled={busy}>{busy ? "Reading..." : "Begin assessment"} <ArrowUpRight size={16} /></button></div></div>; }
+
+function HistoryPanel({ reports, onSelect }: { reports: Report[]; onSelect: (id: string) => void }) { return <div className="dashboard-content fade-up"><div className="history-list">{reports.length ? reports.map((report) => <button className="history-row" key={report.id} onClick={() => onSelect(report.id)}><div className="report-icon"><FileHeart size={18} /></div><div className="history-main"><b>{report.label}</b><span>{new Date(report.createdAt).toLocaleDateString()} · {report.modalities.join(" · ")}</span></div><span className={`history-status ${report.status.toLowerCase()}`}>{report.status.toLowerCase()}</span><ChevronRight size={17} /></button>) : <div className="empty-state"><History size={30} /><h2 className="serif">Your story starts here.</h2><p>Completed assessments will appear in this quiet timeline.</p></div>}</div></div>; }
+
+function SettingsPanel({ profile, setProfile, save }: { profile: { phone: string; address: string; username: string }; setProfile: React.Dispatch<React.SetStateAction<{ phone: string; address: string; username: string }>>; save: (event: React.FormEvent) => void }) { return <div className="dashboard-content fade-up"><form className="settings-form" onSubmit={save}><div className="settings-section"><div><span className="eyebrow">Profile</span><h2 className="serif">A few details, when you are ready.</h2><p>These fields are optional and start empty. Your Clerk account remains the source of truth for sign-in.</p></div><div className="field-stack"><label>Username<input value={profile.username} onChange={(event) => setProfile({ ...profile, username: event.target.value })} placeholder="How should we call you?" /></label><label>Phone number<input value={profile.phone} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} placeholder="Optional" /></label><label>Address<textarea value={profile.address} onChange={(event) => setProfile({ ...profile, address: event.target.value })} placeholder="Optional" rows={3} /></label></div></div><button className="coral-button" type="submit">Save settings <Check size={16} /></button></form></div>; }
+
+function ClerkExperience() {
+  const { isLoaded, isSignedIn } = useAuth();
+  if (!isLoaded) return <div className="loading-screen">Preparing your private workspace...</div>;
+  return isSignedIn ? <Dashboard /> : <Landing />;
+}
+
+export default function Home() { const clerkReady = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY); return clerkReady ? <ClerkExperience /> : <Landing />; }

@@ -7,6 +7,8 @@ from typing import Any
 
 import numpy as np
 
+from src.normalization.biomarker_adapter import SOURCE_SCHEMAS, BiomarkerInput
+
 
 class ModelManager:
     """Loads compatible trained models once and exposes plain Python outputs."""
@@ -17,6 +19,8 @@ class ModelManager:
         self.ecg_model: Any = None
         self.echo_model: Any = None
         self.biomarker_model: Any = None
+        self.biomarker_payload: dict[str, Any] | None = None
+        self.biomarker_calibrators: dict[str, Any] = {}
         self.ecg_diagnostic_targets: list[str] = []
         self.ecg_rhythm_targets: list[str] = []
         self.status: dict[str, Any] = {}
@@ -45,6 +49,7 @@ class ModelManager:
         from src.models.ecg.xresnet1d import XResNet1D
 
         payload = torch.load(path, map_location="cpu", weights_only=False)
+        self.biomarker_payload = payload
         self.ecg_diagnostic_targets = list(payload.get("diagnostic_targets", []))
         self.ecg_rhythm_targets = list(payload.get("rhythm_targets", []))
         model = XResNet1D(
@@ -98,7 +103,17 @@ class ModelManager:
         )
         model.load_state_dict(payload["model_state_dict"], strict=True)
         self.biomarker_model = model.to(self.device).eval()
+        self._load_biomarker_calibrator()
         self.status["biomarkers"] = "loaded"
+
+    def _load_biomarker_calibrator(self) -> None:
+        from src.calibration.calibrator import PlattCalibrator
+
+        calibration_root = self.project_root / "checkpoints" / "calibration" / "biomarker"
+        for task in ("zheen_acute_mi", "uci_heart_failure_hf_mortality", "framingham_ten_year_chd_risk"):
+            path = calibration_root / f"{task}.pkl"
+            if path.exists():
+                self.biomarker_calibrators[task] = PlattCalibrator.load(path)
 
     @property
     def models_loaded(self) -> bool:
@@ -132,3 +147,20 @@ class ModelManager:
         rhythm = dict(zip(self.ecg_rhythm_targets, rhythm.astype(float), strict=True))
         result.update({label.removeprefix("RHYTHM_"): value for label, value in rhythm.items()})
         return result
+
+    def predict_biomarkers(self, inputs: BiomarkerInput) -> dict[str, float]:
+        if self.biomarker_model is None or self.biomarker_payload is None:
+            raise RuntimeError("Biomarker model is unavailable.")
+        if inputs.missing_features:
+            raise ValueError(f"Missing required {inputs.source} features: {', '.join(inputs.missing_features)}")
+        import torch
+
+        tensor = torch.from_numpy(inputs.values).unsqueeze(0).float().to(self.device)
+        with torch.inference_mode():
+            outputs = self.biomarker_model(tensor, inputs.source)
+            raw = torch.sigmoid(outputs[inputs.task])[0].reshape(-1)[0].item()
+        probability = float(raw)
+        calibrator = self.biomarker_calibrators.get(SOURCE_SCHEMAS[inputs.source][2])
+        if calibrator is not None:
+            probability = float(calibrator.predict_proba([probability])[0])
+        return {inputs.task: probability, f"{inputs.task}_raw": float(raw)}

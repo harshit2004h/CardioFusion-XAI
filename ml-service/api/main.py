@@ -38,12 +38,14 @@ def registry() -> dict:
 @app.get("/v1/health")
 def versioned_health() -> dict[str, object]:
     manager = get_model_manager()
+    service = get_inference_service()
     return {
         "status": "ok",
         "service": "cardiofusion-ml",
         "device": manager.device,
         "models_loaded": manager.models_loaded,
         "models": manager.status,
+        "gemini": service.gemini.status,
     }
 
 

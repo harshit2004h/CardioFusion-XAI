@@ -32,5 +32,6 @@ class InferenceResponse(BaseModel):
     predictions: dict[str, Any] = Field(default_factory=dict)
     disease_results: list[dict[str, Any]] = Field(default_factory=list)
     recommendations: list[str] = Field(default_factory=list)
+    gemini_recommendations: dict[str, Any] = Field(default_factory=dict)
     explainability: dict[str, Any] = Field(default_factory=dict)
     warnings: list[dict[str, str]] = Field(default_factory=list)

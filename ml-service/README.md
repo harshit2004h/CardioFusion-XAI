@@ -32,13 +32,23 @@ still rejected for the waveform model.
 The service streams Cloudinary assets into request-local temporary files,
 validates their content signatures, and removes them after processing. ECG text
 is never treated as a waveform. Echo uses OpenCV and the checked-in
-R(2+1)D-18 checkpoint when available. Biomarker inference is intentionally
-disabled until the fitted training preprocessing artifact is supplied; using a
-new scaler at inference time would invalidate the model output.
+R(2+1)D-18 checkpoint when available. Biomarker reports are mapped to the
+validated Zheen, UCI-HF, or Framingham feature order when every required field
+is present. Incomplete reports return `partial_extraction` with missing fields;
+the service never fills a clinical value with zero or an LLM guess. The
+113-feature MI-Complications source is not reconstructed from ordinary reports.
 
 Pinecone is an optional explanation/context layer. It can enrich reports when
 `PINECONE_API_KEY`, `PINECONE_INDEX`, and `PINECONE_NAMESPACE` are configured,
 but it never contributes to numerical disease probabilities.
+
+Gemini recommendations are generated inside the ML service after model
+outputs, calibration, and registry fusion. The service returns them under
+`gemini_recommendations` with `source` set to `gemini` or `local_fallback`.
+Gemini receives only whitelisted disease result fields: disease name, model
+risk, confidence, status, primary modality, and detected modalities. It does
+not receive raw reports, OCR text, ECG waveforms, Echo frames, or patient
+identifiers. It cannot modify probabilities or create disease results.
 
 PyTorch-based machine learning service for multimodal cardiovascular disease
 detection and risk assessment using three complementary modalities:

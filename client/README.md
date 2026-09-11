@@ -1,4 +1,14 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CardioFusion client
+
+Create `.env.local` from `.env.example` and add the Clerk publishable key. The
+server URL defaults to `http://localhost:4000`.
+
+```powershell
+npm install
+npm run dev
+```
+
+The client runs at `http://localhost:3000`.This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
 

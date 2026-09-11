@@ -11,7 +11,9 @@ from src.fusion.staged_fusion import StagedFusionEngine
 from src.inference.model_manager import ModelManager
 from src.ingestion.cloudinary import DownloadError, download_to_temp
 from src.ingestion.dicom import read_ecg_waveform, read_echo_frames
+from src.normalization.biomarker_adapter import select_biomarker_input
 from src.pinecone.client import KnowledgeRetriever
+from src.recommendations.gemini import GeminiRecommendationService
 
 
 class InferenceService:
@@ -21,6 +23,7 @@ class InferenceService:
         self.engine = engine
         self.models = model_manager
         self.knowledge = KnowledgeRetriever()
+        self.gemini = GeminiRecommendationService()
         self.version = version
         self.max_bytes = int(os.getenv("MAX_DOWNLOAD_BYTES", 50 * 1024 * 1024))
 
@@ -45,8 +48,15 @@ class InferenceService:
                     if modality == "biomarkers":
                         result = extract_document(path, file_format)
                         extraction[modality] = result.model_dump()
-                        modalities[modality] = {"available": True, "status": "processed", "details": {"format": file_format}}
-                        warnings.append({"code": "BIOMARKER_FEATURE_ADAPTER_UNAVAILABLE", "message": "Biomarker extraction completed and the trained model is loaded, but the document-to-source feature adapter is not configured; prediction was not run."})
+                        adapter_input = select_biomarker_input(result)
+                        extraction[modality]["source_candidate"] = adapter_input.source if adapter_input else None
+                        if adapter_input and not adapter_input.missing_features:
+                            predictions[modality] = self.models.predict_biomarkers(adapter_input)
+                            modalities[modality] = {"available": True, "status": "processed", "details": {"format": file_format, "dataset": adapter_input.source, "model": "biomarker-ft-v1", "calibrated": adapter_input.task in self.models.biomarker_calibrators}}
+                        else:
+                            missing = list(adapter_input.missing_features) if adapter_input else ["recognized biomarker features"]
+                            modalities[modality] = {"available": True, "status": "partial_extraction", "details": {"format": file_format, "missing_required_features": missing}}
+                            warnings.append({"code": "BIOMARKER_REQUIRED_FEATURES_MISSING", "message": f"The report does not contain enough configured features for a validated biomarker model: {', '.join(missing)}."})
                     elif modality == "ecg":
                         result = extract_document(path, file_format)
                         extraction[modality] = {"machine_report": result.model_dump()}
@@ -86,6 +96,7 @@ class InferenceService:
 
         disease_results = self.engine.evaluate_all(predictions)
         recommendations = sorted({recommendation for result in disease_results.values() for recommendation in result.get("recommendations", [])})
+        gemini_recommendations = self.gemini.generate(list(disease_results.values()))
         return {
             "request_id": request_id,
             "service_version": self.version,
@@ -95,9 +106,11 @@ class InferenceService:
             "predictions": predictions,
             "disease_results": list(disease_results.values()),
             "recommendations": recommendations,
+            "gemini_recommendations": gemini_recommendations,
             "explainability": {
                 "status": "available_after_model_prediction",
                 "knowledge_retrieval": "available" if self.knowledge.available else "fallback_local_templates",
+                "gemini": gemini_recommendations["status"],
             },
             "warnings": warnings,
         }
