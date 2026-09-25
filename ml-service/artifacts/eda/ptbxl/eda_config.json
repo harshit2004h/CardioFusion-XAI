@@ -1,0 +1,40 @@
+{
+  "dataset": "PTB-XL",
+  "diagnostic_labels": [
+    "NORM",
+    "MI",
+    "STTC",
+    "CD",
+    "HYP"
+  ],
+  "rhythm_labels": [
+    "SR",
+    "AFIB",
+    "AFLT",
+    "STACH",
+    "SBRAD",
+    "SARRH",
+    "PSVT",
+    "BIGU",
+    "PACE"
+  ],
+  "train_folds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "validation_folds": [
+    9
+  ],
+  "test_folds": [
+    10
+  ],
+  "random_seed": 42,
+  "signal_audit_samples": 100,
+  "filename_column_inspected": "filename_lr"
+}

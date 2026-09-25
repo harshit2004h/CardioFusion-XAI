@@ -1,0 +1,31 @@
+{
+  "model_config": {
+    "name": "xresnet1d",
+    "depth": 34,
+    "dropout": 0.3
+  },
+  "preprocessing_version": "100hz_record_zscore",
+  "signal_length": 1000,
+  "num_leads": 12,
+  "best_epoch": 14,
+  "best_validation_selection_score": 0.688336247750805,
+  "diagnostic_test": {
+    "auroc": 0.9221651612482521,
+    "auprc": 0.8033641620290973,
+    "f1": 0.7351249969506755,
+    "precision": 0.6813036910237017,
+    "recall": 0.8013037200304897
+  },
+  "patient_overlap": {
+    "train_val": 0,
+    "train_test": 0,
+    "val_test": 0
+  },
+  "rhythm_test": {
+    "auroc": 0.9526287006288814,
+    "auprc": 0.5943133032048125,
+    "f1": 0.5822873847462464,
+    "precision": 0.6427320785313483,
+    "recall": 0.5962888719757555
+  }
+}

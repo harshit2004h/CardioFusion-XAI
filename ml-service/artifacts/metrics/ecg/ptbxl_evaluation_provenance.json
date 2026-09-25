@@ -1,0 +1,42 @@
+{
+  "checkpoint": "D:\\Programming\\VS Code\\Projects\\CardioFusion-XAI\\ml-service\\checkpoints\\ecg\\ptbxl_xresnet1d101.pt",
+  "checkpoint_keys": [
+    "architecture",
+    "best_val_loss",
+    "diagnostic_targets",
+    "duration_seconds",
+    "input_channels",
+    "input_length",
+    "model_state_dict",
+    "rhythm_targets",
+    "sampling_rate_hz"
+  ],
+  "model_config": {},
+  "preprocessing_version": null,
+  "signal_length": 1000,
+  "num_leads": 12,
+  "diagnostic_targets": [
+    "NORM",
+    "MI",
+    "STTC",
+    "CD",
+    "HYP"
+  ],
+  "rhythm_targets": [
+    "RHYTHM_SR",
+    "RHYTHM_AFIB",
+    "RHYTHM_AFLT",
+    "RHYTHM_STACH",
+    "RHYTHM_SBRAD",
+    "RHYTHM_SARRH",
+    "RHYTHM_PSVT",
+    "RHYTHM_BIGU",
+    "RHYTHM_PACE"
+  ],
+  "validation_records": 2193,
+  "test_records": 2203,
+  "threshold_source": "validation_only",
+  "test_used_for_model_selection": false,
+  "test_used_for_threshold_selection": false,
+  "seed": 42
+}
