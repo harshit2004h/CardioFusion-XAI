@@ -32,7 +32,7 @@ ml-service/
 │   ├── inference/
 │   └── eda/
 ├── notebooks/
-│   ├── 01_eda/
+│   ├── 01_eda/ecg or 
 │   ├── 02_preprocessing/
 │   ├── 03_training/
 │   ├── 04_evaluation/
