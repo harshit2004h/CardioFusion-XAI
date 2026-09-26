@@ -1,0 +1,155 @@
+ml-service/
+├── README.md
+├── requirements.txt
+├── pyproject.toml
+├── .env.example
+├── .gitignore
+├── folders.txt
+├── config/
+│   ├── base.yaml
+│   ├── biomarkers.yaml
+│   ├── disease_registry.yaml
+│   ├── ecg.yaml
+│   ├── echo.yaml
+│   ├── label_taxonomy.yaml
+│   └── datasets/
+│       ├── echonet.yaml
+│       ├── framingham.yaml
+│       ├── mi_complications.yaml
+│       ├── ptbxl.yaml
+│       ├── uci_heart_failure.yaml
+│       └── zheen.yaml
+├── data/
+│   ├── raw/
+│   ├── interim/
+│   └── processed/
+├── checkpoints/
+│   ├── biomarkers/
+│   │   ├── framingham/
+│   │   ├── mi_complications/
+│   │   ├── preprocessing/
+│   │   ├── uci_heart_failure/
+│   │   └── zheen/
+│   ├── calibration/
+│   ├── ecg/
+│   │   └── ptbxl/
+│   └── echo/
+├── artifacts/
+│   ├── calibration/
+│   ├── eda/
+│   │   ├── echonet/
+│   │   ├── framingham/
+│   │   ├── mi_complications/
+│   │   ├── ptbxl/
+│   │   └── zheen/
+│   ├── fusion/
+│   ├── inference/
+│   ├── metrics/
+│   │   ├── biomarkers/
+│   │   ├── ecg/
+│   │   └── echo/
+│   └── preprocessing/
+│       └── ptbxl/
+├── notebooks/
+│   ├── 01_eda/
+│   │   ├── echonet.ipynb
+│   │   ├── framingham.ipynb
+│   │   ├── mi_complications.ipynb
+│   │   ├── ptbxl.ipynb
+│   │   ├── uci_heart_failure.ipynb
+│   │   └── zheen.ipynb
+│   ├── 02_preprocessing/
+│   │   ├── biomarkers.ipynb
+│   │   ├── echonet.ipynb
+│   │   └── ptbxl.ipynb
+│   ├── 03_training/
+│   │   ├── biomarkers/biomarkers.ipynb
+│   │   ├── ecg/
+│   │   │   ├── ptbxl_cnn_1D.ipynb
+│   │   │   ├── ptbxl_cnn_BiLSTM.ipynb
+│   │   │   └── ptbxl_cnn_resnet.ipynb
+│   │   └── echo/echonet.ipynb
+│   ├── 04_evaluation/
+│   │   ├── biomarkers/biomarkers.ipynb
+│   │   ├── ecg/ptbxl_cnn_resnet.ipynb
+│   │   └── echo/echonet.ipynb
+│   └── 05_fusion/
+│       ├── calibration.ipynb
+│       ├── fusion_evaluation.ipynb
+│       └── staged_inference.ipynb
+├── src/
+│   ├── calibration/
+│   │   ├── calibrator.py
+│   │   └── metrics.py
+│   ├── datasets/
+│   │   ├── biomarker_dataset.py
+│   │   ├── ecg_dataset.py
+│   │   ├── echo_dataset.py
+│   │   └── ptbxl_loader.py
+│   ├── ecg_processing/
+│   │   └── image_waveform.py
+│   ├── echo_processing/
+│   │   └── video_reader.py
+│   ├── evaluation/
+│   │   ├── evaluator.py
+│   │   └── metrics.py
+│   ├── extraction/
+│   │   ├── document.py
+│   │   └── schemas.py
+│   ├── fusion/
+│   │   ├── disagreement_handler.py
+│   │   ├── evidence_fusion.py
+│   │   ├── modality_state.py
+│   │   ├── registry_loader.py
+│   │   └── staged_fusion.py
+│   ├── inference/
+│   │   ├── model_manager.py
+│   │   └── service.py
+│   ├── ingestion/
+│   │   ├── biomarker_reader.py
+│   │   ├── cloudinary.py
+│   │   ├── dicom.py
+│   │   ├── ecg_reader.py
+│   │   └── echo_reader.py
+│   ├── label_harmonization/
+│   │   └── labels.py
+│   ├── models/
+│   │   ├── biomarkers/
+│   │   ├── common/
+│   │   ├── ecg/
+│   │   └── echo/
+│   ├── normalization/
+│   │   └── biomarker_adapter.py
+│   ├── pinecone/
+│   │   └── client.py
+│   ├── preprocessing/
+│   │   ├── biomarkers/
+│   │   ├── ecg/
+│   │   └── echo/
+│   ├── recommendations/
+│   │   └── gemini.py
+│   ├── training/
+│   ├── utils/
+│   └── xai/
+├── api/
+│   ├── __init__.py
+│   ├── dependencies.py
+│   ├── main.py
+│   └── schemas.py
+└── tests/
+    ├── __init__.py
+    ├── test_api.py
+    ├── test_biomarker_adapter.py
+    ├── test_calibration.py
+    ├── test_dicom.py
+    ├── test_ecg_image.py
+    ├── test_fusion.py
+    └── test_gemini_recommendations.py
+
+Notes:
+- Generated __pycache__ files, local caches, the virtual environment, and .env are excluded from this snapshot.
+- Runtime data, model checkpoints, and generated artifacts are represented by their stable directory layout rather than every generated file.
+- The registry is nested under settings and diseases; fusion unwraps diseases before iteration.
+- Biomarker validation predictions use the long schema: dataset, target, true, prediction.
+- ECG validation and biomarker validation artifacts are written under artifacts/metrics/.
+- EchoNet video processing is OpenCV-based; PyAV is intentionally not a dependency.
