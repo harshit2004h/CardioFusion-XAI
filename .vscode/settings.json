@@ -1,4 +1,6 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python.defaultInterpreterPath": "${workspaceFolder}/ml-service/.venv-cardio/Scripts/python.exe",
+    "python.terminal.activateEnvironment": true,
     "explorer.autoOpenDroppedFile": false
 }
