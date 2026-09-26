@@ -7,14 +7,14 @@ class CNN1D(nn.Module):
     PTB-XL 1D CNN baseline.
 
     Architecture adapted from the ECG branch of the
-    uploaded PTB-XL 1D CNN notebook.
+    uploaded PTB-XL 1D CNN Kaggle notebook.
 
     Input:
         [batch, 12, signal_length]
 
     Output:
-        dictionary containing diagnostic logits
-        for the five PTB-XL diagnostic superclasses.
+        diagnostic logits for:
+        NORM, MI, STTC, CD, HYP
     """
 
     def __init__(
@@ -28,16 +28,20 @@ class CNN1D(nn.Module):
         # --------------------------------------------------
         # ECG feature extractor
         #
-        # Corresponds to the Kaggle create_Y_model():
-        #
+        # Kaggle:
         # Conv1D(64, 7)
-        # BN -> ReLU -> MaxPool
+        # BatchNorm
+        # ReLU
+        # MaxPool
         #
         # Conv1D(128, 3)
-        # BN -> ReLU -> MaxPool
+        # BatchNorm
+        # ReLU
+        # MaxPool
         #
         # Conv1D(256, 3)
-        # BN -> ReLU
+        # BatchNorm
+        # ReLU
         # --------------------------------------------------
 
         self.features = nn.Sequential(
@@ -48,7 +52,6 @@ class CNN1D(nn.Module):
                 kernel_size=7,
                 stride=1,
                 padding=3,
-                bias=True,
             ),
 
             nn.BatchNorm1d(64),
@@ -56,7 +59,7 @@ class CNN1D(nn.Module):
             nn.ReLU(),
 
             nn.MaxPool1d(
-                kernel_size=2,
+                kernel_size=2
             ),
 
             nn.Conv1d(
@@ -65,7 +68,6 @@ class CNN1D(nn.Module):
                 kernel_size=3,
                 stride=1,
                 padding=1,
-                bias=True,
             ),
 
             nn.BatchNorm1d(128),
@@ -73,7 +75,7 @@ class CNN1D(nn.Module):
             nn.ReLU(),
 
             nn.MaxPool1d(
-                kernel_size=2,
+                kernel_size=2
             ),
 
             nn.Conv1d(
@@ -82,7 +84,6 @@ class CNN1D(nn.Module):
                 kernel_size=3,
                 stride=1,
                 padding=1,
-                bias=True,
             ),
 
             nn.BatchNorm1d(256),
@@ -91,45 +92,52 @@ class CNN1D(nn.Module):
         )
 
         # Equivalent to Keras GlobalAveragePooling1D
-        self.global_pool = nn.AdaptiveAvgPool1d(1)
+        self.global_pool = (
+            nn.AdaptiveAvgPool1d(1)
+        )
 
         # --------------------------------------------------
-        # Classification head
+        # Kaggle model02 classification head
         #
-        # Adapted from the Kaggle model02 head after
-        # removing the metadata branch.
+        # Dense(64)
+        # Dense(64)
+        # Dropout(0.5)
+        # Dense(5, sigmoid)
+        #
+        # Sigmoid is NOT included here because we use
+        # BCEWithLogitsLoss during training.
         # --------------------------------------------------
 
         self.classifier = nn.Sequential(
 
             nn.Linear(
                 256,
-                64,
+                64
             ),
 
             nn.ReLU(),
 
             nn.Linear(
                 64,
-                64,
+                64
             ),
 
             nn.ReLU(),
 
             nn.Dropout(
-                dropout,
+                dropout
             ),
 
             nn.Linear(
                 64,
-                num_diagnostic_classes,
+                num_diagnostic_classes
             ),
         )
 
     def forward(self, signal):
 
         # signal:
-        # [batch, channels, time]
+        # [batch, 12, time]
 
         x = self.features(signal)
 
@@ -139,12 +147,12 @@ class CNN1D(nn.Module):
         # [batch, 256, 1]
         x = torch.flatten(
             x,
-            start_dim=1,
+            start_dim=1
         )
 
         # [batch, 256]
-        diagnostic_logits = self.classifier(x)
+        logits = self.classifier(x)
 
         return {
-            "diagnostic": diagnostic_logits,
+            "diagnostic": logits
         }
