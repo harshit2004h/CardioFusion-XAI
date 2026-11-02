@@ -20,6 +20,7 @@ class ModelManager:
         self.echo_model: Any = None
         self.biomarker_model: Any = None
         self.biomarker_payload: dict[str, Any] | None = None
+        self.ecg_payload: dict[str, Any] | None = None
         self.biomarker_calibrators: dict[str, Any] = {}
         self.ecg_diagnostic_targets: list[str] = []
         self.ecg_rhythm_targets: list[str] = []
@@ -42,24 +43,29 @@ class ModelManager:
         return Path(os.getenv(env_name, str(self.project_root / default)))
 
     def _load_ecg(self, torch: Any) -> None:
-        path = self._checkpoint("ECG_CHECKPOINT", "checkpoints/ecg/ptbxl_xresnet1d101.pt")
+        path = self._checkpoint("ECG_CHECKPOINT", "checkpoints/ecg/ptbxl/ptbxl_cnn_bilstm_attention_100hz_record_zscore.pt")
         if not path.exists():
             self.status["ecg"] = "checkpoint_missing"
             return
-        from src.models.ecg.xresnet1d import XResNet1D
+        from src.models.ecg.cnn_bilstm_attention import CNNBiLSTMAttention
 
         payload = torch.load(path, map_location="cpu", weights_only=False)
-        self.biomarker_payload = payload
+        self.ecg_payload = payload
         self.ecg_diagnostic_targets = list(payload.get("diagnostic_targets", []))
         self.ecg_rhythm_targets = list(payload.get("rhythm_targets", []))
-        model = XResNet1D(
-            input_channels=int(payload.get("input_channels", 12)),
+        model_config = payload.get("model_config", {})
+        model = CNNBiLSTMAttention(
+            num_leads=int(payload.get("num_leads", 12)),
             num_diagnostic_classes=len(self.ecg_diagnostic_targets),
             num_rhythm_classes=len(self.ecg_rhythm_targets),
+            cnn_channels=int(model_config.get("cnn_channels", 128)),
+            lstm_hidden=int(model_config.get("lstm_hidden", 128)),
+            lstm_layers=int(model_config.get("lstm_layers", 2)),
+            dropout=float(model_config.get("dropout", 0.30)),
         )
         model.load_state_dict(payload["model_state_dict"], strict=True)
         self.ecg_model = model.to(self.device).eval()
-        self.status["ecg"] = "loaded"
+        self.status["ecg"] = "loaded_cnn_bilstm_attention"
 
     def _load_echo(self, torch: Any) -> None:
         path = self._checkpoint("ECHO_CHECKPOINT", "checkpoints/echo/echonet_r2plus1d18.pt")

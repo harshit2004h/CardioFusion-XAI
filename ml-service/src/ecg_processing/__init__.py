@@ -1,1 +1,0 @@
-"""ECG image and waveform preprocessing adapters."""

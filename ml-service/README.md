@@ -17,17 +17,19 @@ The versioned API is:
 - `GET /v1/registry` for the configured disease registry
 - `POST /v1/inference` with optional `biomarkers`, `ecg`, and `echo` HTTPS URL references
 
-DICOM is supported for all three modality references, and PNG/JPG/JPEG ECG
-images are digitized through the standard 3x4 printed-lead layout:
+Supported uploads are blood/serum PDF or JPG/JPEG/PNG, ECG DICOM/DAT/CSV/SCP/EDF,
+and echo AVI/MP4. ECG inputs are normalized to the BiLSTM model shape `(12, 1000)`.
 
-- Blood/serum: DICOM Structured Report text and encapsulated PDF content are parsed into the existing canonical extraction schema.
-- ECG: DICOM `WaveformSequence` data is decoded, validated for at least 12 leads and 10 seconds, and resampled to the XResNet1D shape `(12, 1000)`.
-- ECG images: lead traces are detected and resampled to `(12, 1000)` when quality is sufficient; the response marks this as image digitization because it is not equivalent to an original digital waveform.
-- Echo: DICOM multi-frame pixel data is decoded and sampled into the R(2+1)D input shape `(3, 32, 112, 112)`.
+The 1D CNN, XResNet1D, and CNN+BiLSTM+Attention notebooks and model classes are
+retained for research training and comparative evaluation. Only
+CNN+BiLSTM+Attention is loaded by the application inference service.
 
-The DICOM file must contain usable modality data. A DICOM extension alone does
-not make a file processable, and ECG diagnostic text without waveform data is
-still rejected for the waveform model.
+- Blood/serum: PDF and image text are parsed into the existing canonical extraction schema.
+- ECG: DICOM `WaveformSequence`, WFDB `.dat` with its matching `.hea`, numeric CSV/SCP, and EDF data are decoded and resampled to 100 Hz.
+- Echo: AVI and MP4 video are sampled into the R(2+1)D input shape `(3, 32, 112, 112)`.
+
+A DICOM file must contain usable modality data. ECG text without waveform data
+is rejected because the BiLSTM model requires a 12-lead signal.
 
 The service streams Cloudinary assets into request-local temporary files,
 validates their content signatures, and removes them after processing. ECG text

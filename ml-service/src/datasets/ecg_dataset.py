@@ -341,6 +341,11 @@ class PTBXLDataset(Dataset):
             "signal":
                 signal_tensor,
 
+            "targets": {
+                "diagnostic": diagnostic_tensor,
+                "rhythm": rhythm_tensor,
+            },
+
             "diagnostic":
                 diagnostic_tensor,
 

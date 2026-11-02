@@ -9,9 +9,10 @@ from urllib.parse import urlparse
 import requests
 
 ALLOWED_FORMATS = {
-    "biomarkers": {"dicom", "pdf", "jpg", "jpeg", "png"},
-    "ecg": {"dicom", "pdf", "jpg", "jpeg", "png"},
-    "echo": {"dicom", "mp4", "avi"},
+    "biomarkers": {"pdf", "jpg", "jpeg", "png"},
+    "ecg": {"dicom", "dat", "csv", "scp", "edf"},
+    "ecg_header": {"hea"},
+    "echo": {"mp4", "avi"},
 }
 
 
@@ -53,8 +54,10 @@ def _format_from_bytes(prefix: bytes, content_type: str, suffix: str) -> str | N
         "video/x-msvideo": "avi",
         "application/dicom": "dicom",
         "application/dicom+json": "dicom",
+        "application/octet-stream": suffix.lstrip(".").lower(),
     }
-    return content_map.get(content_type) or suffix.lstrip(".").lower() or None
+    detected = content_map.get(content_type) or suffix.lstrip(".").lower() or None
+    return "dicom" if detected in {"dcm", "dicom"} else detected
 
 
 @contextmanager

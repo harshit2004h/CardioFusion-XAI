@@ -71,6 +71,8 @@ ml-service/
 │   │   └── echo/echonet.ipynb
 │   ├── 04_evaluation/
 │   │   ├── biomarkers/biomarkers.ipynb
+│   │   ├── ecg/ptbxl_cnn_1D.ipynb
+│   │   ├── ecg/ptbxl_cnn_BiLSTM.ipynb
 │   │   ├── ecg/ptbxl_cnn_resnet.ipynb
 │   │   └── echo/echonet.ipynb
 │   └── 05_fusion/
@@ -86,8 +88,6 @@ ml-service/
 │   │   ├── ecg_dataset.py
 │   │   ├── echo_dataset.py
 │   │   └── ptbxl_loader.py
-│   ├── ecg_processing/
-│   │   └── image_waveform.py
 │   ├── echo_processing/
 │   │   └── video_reader.py
 │   ├── evaluation/
@@ -109,8 +109,7 @@ ml-service/
 │   │   ├── biomarker_reader.py
 │   │   ├── cloudinary.py
 │   │   ├── dicom.py
-│   │   ├── ecg_reader.py
-│   │   └── echo_reader.py
+│   │   └── ecg_waveform.py
 │   ├── label_harmonization/
 │   │   └── labels.py
 │   ├── models/
@@ -142,7 +141,7 @@ ml-service/
     ├── test_biomarker_adapter.py
     ├── test_calibration.py
     ├── test_dicom.py
-    ├── test_ecg_image.py
+    ├── test_ecg_waveform.py
     ├── test_fusion.py
     └── test_gemini_recommendations.py
 

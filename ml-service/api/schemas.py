@@ -7,6 +7,7 @@ class FileReference(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     url: HttpUrl
+    header_url: HttpUrl | None = None
 
 
 class InferenceRequest(BaseModel):

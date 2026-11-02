@@ -4,13 +4,13 @@ import os
 import uuid
 from typing import Any
 
-from src.ecg_processing.image_waveform import ECGImageError, digitize_ecg_image
 from src.echo_processing.video_reader import sample_video
 from src.extraction.document import extract_document
 from src.fusion.staged_fusion import StagedFusionEngine
 from src.inference.model_manager import ModelManager
 from src.ingestion.cloudinary import DownloadError, download_to_temp
-from src.ingestion.dicom import read_ecg_waveform, read_echo_frames
+from src.ingestion.dicom import read_echo_frames
+from src.ingestion.ecg_waveform import ECGWaveformError, read_ecg_file
 from src.normalization.biomarker_adapter import select_biomarker_input
 from src.pinecone.client import KnowledgeRetriever
 from src.recommendations.gemini import GeminiRecommendationService
@@ -58,24 +58,21 @@ class InferenceService:
                             modalities[modality] = {"available": True, "status": "partial_extraction", "details": {"format": file_format, "missing_required_features": missing}}
                             warnings.append({"code": "BIOMARKER_REQUIRED_FEATURES_MISSING", "message": f"The report does not contain enough configured features for a validated biomarker model: {', '.join(missing)}."})
                     elif modality == "ecg":
-                        result = extract_document(path, file_format)
-                        extraction[modality] = {"machine_report": result.model_dump()}
-                        if file_format == "dicom":
-                            waveform, waveform_metadata = read_ecg_waveform(path)
-                        elif file_format in {"png", "jpg", "jpeg"}:
-                            waveform, waveform_metadata = digitize_ecg_image(path)
+                        if file_format == "dat" and reference.header_url is None:
+                            raise ECGWaveformError("WFDB .dat ECG requires its matching .hea header file.")
+                        if file_format == "dat" and reference.header_url is not None:
+                            header_path = path.with_suffix(".hea")
+                            try:
+                                with download_to_temp(str(reference.header_url), "ecg_header", max_bytes=self.max_bytes) as downloaded_header:
+                                    header_path.write_bytes(downloaded_header.read_bytes())
+                                    waveform, waveform_metadata = read_ecg_file(path, file_format)
+                            finally:
+                                header_path.unlink(missing_ok=True)
                         else:
-                            waveform = None
-                            waveform_metadata = None
-                        if waveform is not None:
-                            extraction[modality]["waveform"] = waveform_metadata
-                            predictions[modality] = self.models.predict_ecg(waveform)
-                            modalities[modality] = {"available": True, "status": "processed", "details": {"format": file_format, **waveform_metadata, "model": "ptbxl-xresnet1d-v1"}}
-                            if file_format in {"png", "jpg", "jpeg"}:
-                                warnings.append({"code": "ECG_IMAGE_DIGITIZATION", "message": "The ECG waveform was digitized from a printed image; it is not equivalent to an original digital ECG recording."})
-                        else:
-                            modalities[modality] = {"available": False, "status": "unsupported_for_current_model", "details": {"format": file_format, "waveform_available": False}}
-                            warnings.append({"code": "ECG_WAVEFORM_UNAVAILABLE", "message": "ECG text is not a waveform; the current XResNet1D model was not run."})
+                            waveform, waveform_metadata = read_ecg_file(path, file_format)
+                        extraction[modality] = {"waveform": waveform_metadata}
+                        predictions[modality] = self.models.predict_ecg(waveform)
+                        modalities[modality] = {"available": True, "status": "processed", "details": {**waveform_metadata, "model": "cnn-bilstm-attention-v1"}}
                     else:
                         clip, metadata = read_echo_frames(path) if file_format == "dicom" else sample_video(path, format_label=file_format.upper())
                         extraction[modality] = {"video": metadata, "tensor_shape": list(clip.transpose(3, 0, 1, 2).shape)}
@@ -87,14 +84,15 @@ class InferenceService:
                         except (RuntimeError, ValueError) as exc:
                             modalities[modality]["status"] = "model_unavailable"
                             warnings.append({"code": "ECHO_MODEL_UNAVAILABLE", "message": str(exc)})
-            except ECGImageError as exc:
-                modalities[modality] = {"available": False, "status": "waveform_quality_insufficient", "details": {"error": str(exc)}}
-                warnings.append({"code": "ECG_WAVEFORM_QUALITY_INSUFFICIENT", "message": str(exc)})
+            except ECGWaveformError as exc:
+                modalities[modality] = {"available": False, "status": "waveform_unavailable", "details": {"error": str(exc)}}
+                warnings.append({"code": "ECG_WAVEFORM_UNAVAILABLE", "message": str(exc)})
             except (DownloadError, ValueError, OSError) as exc:
                 modalities[modality] = {"available": False, "status": "processing_failed", "details": {"error": str(exc)}}
                 warnings.append({"code": f"{modality.upper()}_PROCESSING_FAILED", "message": str(exc)})
 
         disease_results = self.engine.evaluate_all(predictions)
+        available_modalities = sorted(predictions)
         recommendations = sorted({recommendation for result in disease_results.values() for recommendation in result.get("recommendations", [])})
         gemini_recommendations = self.gemini.generate(list(disease_results.values()))
         return {
@@ -104,6 +102,8 @@ class InferenceService:
             "modalities": modalities,
             "extraction": extraction,
             "predictions": predictions,
+            "available_modalities": available_modalities,
+            "result_scope": "ECG-only" if available_modalities == ["ecg"] else "multimodal" if len(available_modalities) > 1 else "partial",
             "disease_results": list(disease_results.values()),
             "recommendations": recommendations,
             "gemini_recommendations": gemini_recommendations,

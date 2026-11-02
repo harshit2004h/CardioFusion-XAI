@@ -1,8 +1,7 @@
 """
 Train the PTB-XL ECG multi-label classifier.
 
-Supported ECG models:
-    - xresnet1d
+Supported ECG model:
     - cnn_bilstm_attention
 
 Project targets:
@@ -200,8 +199,9 @@ def parse_args():
         "--model-name",
         default="cnn_bilstm_attention",
         choices=[
-            "xresnet1d",
+            "cnn1d",
             "cnn_bilstm_attention",
+            "xresnet1d",
         ],
     )
 
@@ -281,20 +281,10 @@ def extract_logits(
             "'diagnostic' logits."
         )
 
-    if "rhythm" not in logits:
-
-        raise KeyError(
-            "Model output is missing "
-            "'rhythm' logits."
-        )
-
-    return {
-        "diagnostic":
-            logits["diagnostic"],
-
-        "rhythm":
-            logits["rhythm"],
-    }
+    normalized = {"diagnostic": logits["diagnostic"]}
+    if "rhythm" in logits:
+        normalized["rhythm"] = logits["rhythm"]
+    return normalized
 
 
 # ============================================================
@@ -369,7 +359,7 @@ def main():
         [],
     )
 
-    if not rhythm_targets:
+    if args.model_name != "cnn1d" and not rhythm_targets:
         raise ValueError(
             "No rhythm targets were found in the PTB-XL manifest. "
             "Check the processed ECG manifest columns."
@@ -484,18 +474,12 @@ def main():
     # Multi-task loss
     # --------------------------------------------------------
 
-    criterion = MultiTaskLoss({
-
-        "diagnostic":
-            MaskedBCEWithLogitsLoss(
-                diagnostic_pw
-            ),
-
-        "rhythm":
-            MaskedBCEWithLogitsLoss(
-                rhythm_pw
-            ),
-    })
+    task_losses = {
+        "diagnostic": MaskedBCEWithLogitsLoss(diagnostic_pw),
+    }
+    if args.model_name != "cnn1d":
+        task_losses["rhythm"] = MaskedBCEWithLogitsLoss(rhythm_pw)
+    criterion = MultiTaskLoss(task_losses)
 
     # --------------------------------------------------------
     # Optimizer
@@ -582,20 +566,11 @@ def main():
     # Checkpoint filename
     # --------------------------------------------------------
 
-    if args.model_name == (
-        "cnn_bilstm_attention"
-    ):
-
-        save_name = (
-            "ptbxl_"
-            "cnn_bilstm_attention.pt"
-        )
-
-    else:
-
-        save_name = (
-            "ptbxl_xresnet1d.pt"
-        )
+    save_name = {
+        "cnn1d": "ptbxl_cnn1d.pt",
+        "cnn_bilstm_attention": "ptbxl_cnn_bilstm_attention.pt",
+        "xresnet1d": "ptbxl_xresnet1d_depth34.pt",
+    }[args.model_name]
 
     # --------------------------------------------------------
     # Training
