@@ -4,6 +4,7 @@ import os
 import uuid
 from typing import Any
 
+from src.echo_processing.panecho_reader import read_echo_for_panecho
 from src.echo_processing.video_reader import sample_video
 from src.extraction.document import extract_document
 from src.fusion.staged_fusion import StagedFusionEngine
@@ -30,6 +31,28 @@ class InferenceService:
     @staticmethod
     def _request_id() -> str:
         return f"cf_{uuid.uuid4().hex}"
+
+    def _run_panecho(self, path, file_format, modalities, extraction, predictions, warnings) -> None:
+        """Echo branch for the PanEcho backend (16-frame, 224x224, multi-clip averaged)."""
+        clips, metadata = read_echo_for_panecho(path, file_format, num_clips=self.models.echo_num_clips)
+        extraction["echo"] = {"video": metadata, "tensor_shape": list(clips.shape)}
+        modalities["echo"] = {"available": True, "status": "processed", "details": dict(metadata)}
+        try:
+            predictions["echo"], auxiliary = self.models.predict_echo_panecho(clips)
+        except (RuntimeError, ValueError) as exc:
+            modalities["echo"]["status"] = "model_unavailable"
+            warnings.append({"code": "ECHO_MODEL_UNAVAILABLE", "message": str(exc)})
+            return
+        modalities["echo"]["details"]["model"] = self.models.echo_model_name
+        if auxiliary:
+            # PanEcho's other heads (valves, RV, LA, LVH, ...) were trained on Yale data and are
+            # not validated on EchoNet-Dynamic here, so they are reported but never fused.
+            extraction["echo"]["panecho_auxiliary"] = {
+                "validated_on_echonet": False,
+                "used_in_fusion": False,
+                "note": "Research output from the pretrained PanEcho heads; not a diagnosis.",
+                "outputs": auxiliary,
+            }
 
     def run(self, request: Any) -> dict[str, Any]:
         request_id = self._request_id()
@@ -73,6 +96,8 @@ class InferenceService:
                         extraction[modality] = {"waveform": waveform_metadata}
                         predictions[modality] = self.models.predict_ecg(waveform)
                         modalities[modality] = {"available": True, "status": "processed", "details": {**waveform_metadata, "model": "cnn-bilstm-attention-v1"}}
+                    elif self.models.echo_backend == "panecho":
+                        self._run_panecho(path, file_format, modalities, extraction, predictions, warnings)
                     else:
                         clip, metadata = read_echo_frames(path) if file_format == "dicom" else sample_video(path, format_label=file_format.upper())
                         extraction[modality] = {"video": metadata, "tensor_shape": list(clip.transpose(3, 0, 1, 2).shape)}

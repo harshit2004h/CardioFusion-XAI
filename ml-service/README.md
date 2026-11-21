@@ -26,7 +26,10 @@ CNN+BiLSTM+Attention is loaded by the application inference service.
 
 - Blood/serum: PDF and image text are parsed into the existing canonical extraction schema.
 - ECG: DICOM `WaveformSequence`, WFDB `.dat` with its matching `.hea`, numeric CSV/SCP, and EDF data are decoded and resampled to 100 Hz.
-- Echo: AVI and MP4 video are sampled into the R(2+1)D input shape `(3, 32, 112, 112)`.
+- Echo: AVI, MP4 and multi-frame DICOM are run through **PanEcho** when its
+  checkpoint is present (16 consecutive frames, 224x224, ImageNet-normalised,
+  4 clips averaged). Otherwise the R(2+1)D baseline input shape `(3, 32, 112, 112)`
+  is used. See "Echo expert: PanEcho" below.
 
 A DICOM file must contain usable modality data. ECG text without waveform data
 is rejected because the BiLSTM model requires a 12-lead signal.
@@ -51,6 +54,32 @@ Gemini receives only whitelisted disease result fields: disease name, model
 risk, confidence, status, primary modality, and detected modalities. It does
 not receive raw reports, OCR text, ECG waveforms, Echo frames, or patient
 identifiers. It cannot modify probabilities or create disease results.
+
+## Echo expert: PanEcho
+
+PanEcho (Holste et al., JAMA 2025) is a pretrained multi-task echo video model
+(ConvNeXt-Tiny frame encoder + temporal Transformer, 40 task heads).
+
+```bash
+# 1. put the weights in place (accepts panecho.pt or panecho.pt.zip)
+python scripts/prepare_panecho_checkpoint.py --source /path/to/panecho.pt.zip
+
+# 2. zero-shot EchoNet-Dynamic evaluation of the PanEcho EF head
+python -m src.evaluation.evaluate_echo_panecho --data-root data/raw/echo/echonet --tag zero_shot
+
+# 3. optional: fine-tune on EchoNet-Dynamic (GPU recommended)
+python -m src.training.train_echo_panecho --data-root data/raw/echo/echonet
+
+# 4. start the API; /v1/health shows "echo": "loaded_panecho_pretrained" or "loaded_panecho_finetuned"
+python -m api.main
+```
+
+Select the backend with `ECHO_MODEL_BACKEND=auto|panecho|r2plus1d` (default `auto`).
+Only PanEcho's EF output enters the disease registry; the other heads are
+returned under `extraction.echo.panecho_auxiliary` as non-validated research
+outputs. PanEcho weights are licensed CC BY-NC-SA 4.0 (non-commercial).
+
+---
 
 PyTorch-based machine learning service for multimodal cardiovascular disease
 detection and risk assessment using three complementary modalities:

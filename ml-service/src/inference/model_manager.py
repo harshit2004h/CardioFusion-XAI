@@ -18,6 +18,10 @@ class ModelManager:
         self.device = "cpu"
         self.ecg_model: Any = None
         self.echo_model: Any = None
+        # "panecho" or "r2plus1d" once a model is loaded; selects the matching reader in the service.
+        self.echo_backend: str | None = None
+        self.echo_model_name: str = "echonet-r2plus1d-v1"
+        self.echo_num_clips: int = int(os.getenv("PANECHO_NUM_CLIPS", "4"))
         self.biomarker_model: Any = None
         self.biomarker_payload: dict[str, Any] | None = None
         self.ecg_payload: dict[str, Any] | None = None
@@ -67,7 +71,79 @@ class ModelManager:
         self.ecg_model = model.to(self.device).eval()
         self.status["ecg"] = "loaded_cnn_bilstm_attention"
 
+    def _panecho_checkpoint(self) -> Path | None:
+        """Explicit PANECHO_CHECKPOINT, else the EchoNet fine-tuned file, else the released weights."""
+        explicit = os.getenv("PANECHO_CHECKPOINT")
+        if explicit:
+            path = Path(explicit).expanduser()
+            return path if path.is_absolute() else self.project_root / path
+        try:
+            import yaml
+
+            config = yaml.safe_load(
+                (self.project_root / "config" / "echo.yaml").read_text(encoding="utf-8")
+            ) or {}
+            panecho = config.get("panecho", {})
+            checkpoints = panecho.get("checkpoints", {})
+            candidates = (
+                checkpoints.get("finetuned"),
+                checkpoints.get("pretrained"),
+            )
+        except (OSError, AttributeError, ImportError):
+            candidates = ()
+        root = self.project_root / "checkpoints" / "echo" / "panecho"
+        for candidate in (*candidates, "checkpoints/echo/panecho/panecho_echonet_finetuned.pt",
+                          "checkpoints/echo/panecho.pt",
+                          "checkpoints/echo/panecho/panecho.pt",
+                          "checkpoints/echo/panecho/panecho.pt.zip"):
+            if not candidate:
+                continue
+            path = Path(candidate)
+            path = path if path.is_absolute() else self.project_root / path
+            if path.exists():
+                return path
+        return None
+
     def _load_echo(self, torch: Any) -> None:
+        backend = os.getenv("ECHO_MODEL_BACKEND")
+        if not backend:
+            try:
+                import yaml
+
+                config = yaml.safe_load(
+                    (self.project_root / "config" / "echo.yaml").read_text(encoding="utf-8")
+                ) or {}
+                backend = str(config.get("backend", "auto"))
+            except (OSError, ImportError):
+                backend = "auto"
+        backend = backend.strip().lower()
+        if backend not in {"auto", "panecho", "r2plus1d"}:
+            self.status["echo"] = f"invalid_backend:{backend}"
+            return
+        if backend in {"auto", "panecho"}:
+            panecho_path = self._panecho_checkpoint()
+            if panecho_path is not None and panecho_path.exists():
+                self._load_panecho(torch, panecho_path)
+                return
+            if backend == "panecho":
+                self.status["echo"] = "checkpoint_missing"
+                return
+        self._load_r2plus1d(torch)
+
+    def _load_panecho(self, torch: Any, path: Path) -> None:
+        from src.models.echo.panecho import load_panecho
+
+        try:
+            self.echo_model = load_panecho(path, tasks="auto", device=self.device)
+        except Exception as exc:  # keep the other modalities loading
+            self.status["echo"] = f"checkpoint_invalid: {exc}"
+            return
+        fine_tuned = bool(self.echo_model.checkpoint_metadata.get("fine_tuned"))
+        self.echo_backend = "panecho"
+        self.echo_model_name = "panecho-echonet-finetuned-v1" if fine_tuned else "panecho-v1-pretrained"
+        self.status["echo"] = "loaded_panecho_finetuned" if fine_tuned else "loaded_panecho_pretrained"
+
+    def _load_r2plus1d(self, torch: Any) -> None:
         path = self._checkpoint("ECHO_CHECKPOINT", "checkpoints/echo/echonet_r2plus1d18.pt")
         if not path.exists():
             self.status["echo"] = "checkpoint_missing"
@@ -78,6 +154,8 @@ class ModelManager:
         model = R2Plus1DRegressor(pretrained=False)
         model.load_state_dict(payload["model_state_dict"], strict=True)
         self.echo_model = model.to(self.device).eval()
+        self.echo_backend = "r2plus1d"
+        self.echo_model_name = "echonet-r2plus1d-v1"
         self.status["echo"] = "loaded"
 
     def _load_biomarkers(self, torch: Any) -> None:
@@ -125,9 +203,35 @@ class ModelManager:
     def models_loaded(self) -> bool:
         return bool(self.ecg_model or self.echo_model or self.biomarker_model)
 
+    def predict_echo_panecho(self, clips: Any) -> tuple[dict[str, float], dict[str, Any]]:
+        """PanEcho on [num_clips, 3, 16, 224, 224]; outputs are averaged over clips.
+
+        Returns (fusion predictions, auxiliary outputs). Only EF goes to the fusion
+        engine: it is the one PanEcho output validated against EchoNet labels here.
+        """
+        if self.echo_model is None or self.echo_backend != "panecho":
+            raise RuntimeError("PanEcho echo model is unavailable.")
+        import torch
+
+        from src.models.echo.panecho import decode_outputs
+
+        if clips.ndim != 5 or tuple(clips.shape[1:]) != (3, self.echo_model.clip_len, 224, 224):
+            raise ValueError(f"PanEcho requires [clips, 3, {self.echo_model.clip_len}, 224, 224], got {tuple(clips.shape)}.")
+        outputs = self.echo_model.predict_clips(clips.float().to(self.device))
+        if not all(torch.isfinite(value).all() for value in outputs.values()):
+            raise ValueError("Echo model produced non-finite outputs.")
+        decoded = decode_outputs(outputs)
+        ef = float(decoded["EF"]["value"])
+        if not 0.0 <= ef <= 100.0:
+            raise ValueError("Echo model produced an invalid EF value.")
+        auxiliary = {name: value for name, value in decoded.items() if name != "EF"}
+        return {"EF": ef}, auxiliary
+
     def predict_echo(self, clip: np.ndarray) -> dict[str, float]:
         if self.echo_model is None:
             raise RuntimeError("Echo model is unavailable.")
+        if self.echo_backend == "panecho":
+            raise RuntimeError("PanEcho is loaded; use predict_echo_panecho with PanEcho clips.")
         import torch
 
         tensor = torch.from_numpy(clip.transpose(3, 0, 1, 2)).unsqueeze(0).float().to(self.device)

@@ -1,0 +1,21 @@
+{
+  "checkpoint": "d:\\Programming\\VS Code\\Projects\\CardioFusion-XAI\\ml-service\\checkpoints\\echo\\panecho\\panecho_echonet_finetuned.pt",
+  "split": "test",
+  "num_clips": 4,
+  "n_videos": 182,
+  "EF_MAE": 5.0702226135756945,
+  "EF_RMSE": 7.334132096753461,
+  "EF_R2": 0.6271833473569632,
+  "EF_<50_Accuracy": 0.9175824175824175,
+  "EF_<40_Accuracy": 0.945054945054945,
+  "EF_<50_auroc": 0.9343750000000001,
+  "EF_<50_auprc": 0.8007152424772154,
+  "EF_<50_f1": 0.7368421052631579,
+  "EF_<50_precision": 0.84,
+  "EF_<50_recall": 0.65625,
+  "EF_<40_auroc": 0.9681571815718157,
+  "EF_<40_auprc": 0.7985614640324787,
+  "EF_<40_f1": 0.6666666666666666,
+  "EF_<40_precision": 0.8333333333333334,
+  "EF_<40_recall": 0.5555555555555556
+}
