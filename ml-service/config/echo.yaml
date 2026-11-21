@@ -1,3 +1,11 @@
+# Echo expert configuration.
+# backend: "auto" uses PanEcho when its checkpoint exists, otherwise the R(2+1)D baseline.
+# Override at runtime with the ECHO_MODEL_BACKEND env var (auto | panecho | r2plus1d).
+backend: auto
+
+# ------------------------------------------------------------
+# Baseline: R(2+1)D-18 trained in this project
+# ------------------------------------------------------------
 frames: 32
 stride: 4
 height: 112
@@ -7,3 +15,32 @@ model:
   name: r2plus1d_18
   checkpoint: checkpoints/echo/echonet_r2plus1d18.pt
 target: EF
+
+# ------------------------------------------------------------
+# PanEcho (Holste et al., JAMA 2025) - pretrained multi-task echo model
+# Weights: https://github.com/CarDS-Yale/PanEcho/releases/download/v1.0/panecho.pt
+# License of weights: CC BY-NC-SA 4.0 (non-commercial / academic use)
+# ------------------------------------------------------------
+panecho:
+  # Loaded in this order (first existing file wins); PANECHO_CHECKPOINT env var overrides.
+  checkpoints:
+    finetuned: checkpoints/echo/panecho/panecho_echonet_finetuned.pt
+    pretrained: checkpoints/echo/panecho.pt
+  input:
+    clip_len: 16            # consecutive frames, native frame rate (no stride)
+    resize: 256             # every frame resized to 256x256 (INTER_AREA) ...
+    crop: 224               # ... then centre-cropped to 224x224
+    normalization: imagenet # mean (0.485, 0.456, 0.406), std (0.229, 0.224, 0.225)
+    channel_order: bgr      # as decoded by OpenCV, matching PanEcho training
+  inference:
+    num_clips: 4            # clips averaged per video (PANECHO_NUM_CLIPS env var)
+  fusion_outputs:
+    - EF                    # only EF is passed to the disease registry
+  auxiliary_outputs: report_only  # other 39 heads shown in extraction.echo.panecho_auxiliary
+  finetune:
+    targets: [EF, LVEDV, LVESV]   # EchoNet columns EF, EDV, ESV
+    epochs: 30
+    batch_size: 4
+    lr: 1.0e-4
+    backbone_lr_scale: 0.1
+    patience: 10
