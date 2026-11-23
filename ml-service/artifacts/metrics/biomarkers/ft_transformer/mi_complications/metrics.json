@@ -1,0 +1,243 @@
+{
+  "source": "mi_complications",
+  "best_epoch": 7,
+  "best_validation_loss": 1.2227368354797363,
+  "split_info": {
+    "stratified": true,
+    "stratification_target": "fibr_preds"
+  },
+  "target_specs": {
+    "fibr_preds": {
+      "type": "binary"
+    },
+    "preds_tah": {
+      "type": "binary"
+    },
+    "jelud_tah": {
+      "type": "binary"
+    },
+    "fibr_jelud": {
+      "type": "binary"
+    },
+    "a_v_blok": {
+      "type": "binary"
+    },
+    "o_l_post": {
+      "type": "binary"
+    },
+    "razriv": {
+      "type": "binary"
+    },
+    "dressler": {
+      "type": "binary"
+    },
+    "zsn": {
+      "type": "binary"
+    },
+    "rec_im": {
+      "type": "binary"
+    },
+    "p_im_sten": {
+      "type": "binary"
+    },
+    "let_is": {
+      "type": "multiclass",
+      "num_classes": 8
+    }
+  },
+  "validation_metrics": {
+    "fibr_preds": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.6787033926771918,
+      "auprc": 0.19432132714117156,
+      "brier": 0.24661611754397655,
+      "f1_at_0_5": 0.24
+    },
+    "preds_tah": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.6857707509881423,
+      "auprc": 0.028079710144927536,
+      "brier": 0.17599691932870157,
+      "f1_at_0_5": 0.0
+    },
+    "jelud_tah": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.723919523099851,
+      "auprc": 0.17990936491172244,
+      "brier": 0.151616051206745,
+      "f1_at_0_5": 0.16666666666666666
+    },
+    "fibr_jelud": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.7762237762237763,
+      "auprc": 0.17699998079036414,
+      "brier": 0.23328165306114637,
+      "f1_at_0_5": 0.16822429906542055
+    },
+    "a_v_blok": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.716,
+      "auprc": 0.04498157569945748,
+      "brier": 0.13944300338206486,
+      "f1_at_0_5": 0.0851063829787234
+    },
+    "o_l_post": {
+      "status": "computed",
+      "n": 254,
+      "auroc": 0.7580044676098286,
+      "auprc": 0.2046953599603079,
+      "brier": 0.15685647017740434,
+      "f1_at_0_5": 0.3076923076923077
+    },
+    "razriv": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.7348690153568203,
+      "auprc": 0.15065458589554975,
+      "brier": 0.1357541273195429,
+      "f1_at_0_5": 0.15625
+    },
+    "dressler": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.5230352303523036,
+      "auprc": 0.04620706781001621,
+      "brier": 0.22737030241415304,
+      "f1_at_0_5": 0.07920792079207921
+    },
+    "zsn": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.6168503642817112,
+      "auprc": 0.3011383532598624,
+      "brier": 0.24138497716898966,
+      "f1_at_0_5": 0.345679012345679
+    },
+    "rec_im": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.6355833008193523,
+      "auprc": 0.1955505071756694,
+      "brier": 0.22232498141090265,
+      "f1_at_0_5": 0.20754716981132076
+    },
+    "p_im_sten": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.6357070876721532,
+      "auprc": 0.14635512688298816,
+      "brier": 0.2550000881127451,
+      "f1_at_0_5": 0.25
+    },
+    "let_is": {
+      "status": "computed",
+      "n": 255,
+      "accuracy": 0.803921568627451,
+      "macro_f1": 0.11141304347826086,
+      "log_loss": 0.8034950103693086
+    }
+  },
+  "test_metrics": {
+    "fibr_preds": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.5478260869565218,
+      "auprc": 0.1422131887726399,
+      "brier": 0.25860032316998727,
+      "f1_at_0_5": 0.20833333333333334
+    },
+    "preds_tah": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.7182539682539683,
+      "auprc": 0.026506507775524005,
+      "brier": 0.1778849796001596,
+      "f1_at_0_5": 0.0
+    },
+    "jelud_tah": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.5981781376518218,
+      "auprc": 0.048796598857616044,
+      "brier": 0.1685026683454075,
+      "f1_at_0_5": 0.08108108108108109
+    },
+    "fibr_jelud": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.6553748870822041,
+      "auprc": 0.07655567658048973,
+      "brier": 0.23676340910271876,
+      "f1_at_0_5": 0.07920792079207921
+    },
+    "a_v_blok": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.8432700993676603,
+      "auprc": 0.1381747740796861,
+      "brier": 0.15162880490895125,
+      "f1_at_0_5": 0.17647058823529413
+    },
+    "o_l_post": {
+      "status": "computed",
+      "n": 254,
+      "auroc": 0.8187041174593042,
+      "auprc": 0.22677103929690345,
+      "brier": 0.15405800609629675,
+      "f1_at_0_5": 0.20588235294117646
+    },
+    "razriv": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.6278801843317973,
+      "auprc": 0.19297372392416703,
+      "brier": 0.15507869238769834,
+      "f1_at_0_5": 0.09523809523809523
+    },
+    "dressler": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.6478067387158297,
+      "auprc": 0.08143786685907778,
+      "brier": 0.232666451862562,
+      "f1_at_0_5": 0.1415929203539823
+    },
+    "zsn": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.683090909090909,
+      "auprc": 0.3334165957339728,
+      "brier": 0.23738167219509396,
+      "f1_at_0_5": 0.44970414201183434
+    },
+    "rec_im": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.6249618553555081,
+      "auprc": 0.16167973833371166,
+      "brier": 0.23202256131927937,
+      "f1_at_0_5": 0.25
+    },
+    "p_im_sten": {
+      "status": "computed",
+      "n": 255,
+      "auroc": 0.5847076461769115,
+      "auprc": 0.12565044807448558,
+      "brier": 0.25621127531252075,
+      "f1_at_0_5": 0.19607843137254902
+    },
+    "let_is": {
+      "status": "computed",
+      "n": 255,
+      "accuracy": 0.8509803921568627,
+      "macro_f1": 0.11518046709129512,
+      "log_loss": 0.662964373182463
+    }
+  },
+  "checkpoint": "D:\\Programming\\VS Code\\Projects\\CardioFusion-XAI\\ml-service\\checkpoints\\biomarkers\\mi_complications\\biomarker_ft_transformer.pt"
+}

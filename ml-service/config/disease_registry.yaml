@@ -3,9 +3,9 @@
 # Single source of truth for multimodal fusion/orchestration
 #
 # NOTE:
-# The modalities are independently trained on disjoint
-# patient populations. Fusion therefore uses calibrated
-# per-disease probabilities + rule-based confirmation.
+# Modality training cohorts are unpaired: there is no linked
+# multimodal training/calibration set. Keep probabilities separate
+# and report supporting evidence without pooling scores.
 # ============================================================
 
 settings:
@@ -19,16 +19,15 @@ settings:
     do_not_average: true
     do_not_multiply: true
     keep_primary_risk_as_displayed_risk: true
+    require_matching_calibration_for_risk: true
 
   confidence:
-    high_min_auc: 0.90
-    moderate_min_auc: 0.75
-    low_below_auc: 0.75
+    patient_level_uncertainty: "not_estimated"
 
   agreement:
     threshold: 0.50
-    upgrade_on_agreement: true
-    cap_at_moderate_on_disagreement: true
+    compare_thresholded_decisions: true
+    upgrade_on_agreement: false
 
 
 # ============================================================
@@ -38,23 +37,23 @@ settings:
 diseases:
 
   acute_mi:
-    display_name: "Acute Myocardial Infarction"
+    display_name: "Zheen Heart Attack Label Score"
     category: "coronary_ischemic"
 
-    status: "supported"
+    status: "research_only"
 
     primary_modality: "biomarkers"
     primary_dataset: "zheen"
     primary_output: "acute_mi"
 
-    confirmatory_modalities:
-      - "ecg"
+    confirmatory_modalities: []
 
-    confirmatory:
+    supporting:
       ecg:
         dataset: "ptbxl"
         output: "MI"
-        role: "confirmation_localization"
+        role: "independent_ecg_label_signal"
+        interpretation: "PTB-XL MI superclass is a separate ECG annotation, not the same endpoint as the Zheen heart-attack label."
 
     echo:
       role: "supportive_only"
@@ -63,8 +62,8 @@ diseases:
       positive_probability: 0.50
 
     notes:
-      - "Blood/serum provides the primary Acute MI signal."
-      - "PTB-XL MI supports ECG confirmation/localization."
+      - "This is a model score for the Zheen cohort's binary heart-attack label, not a standalone clinical diagnosis or emergency triage test."
+      - "PTB-XL MI superclass is shown only as an independent supporting ECG signal."
       - "Echo does not directly diagnose MI in EchoNet."
 
 
@@ -72,7 +71,8 @@ diseases:
     display_name: "Myocardial Ischemia"
     category: "coronary_ischemic"
 
-    status: "supported_weaker"
+    status: "unsupported"
+    reason: "PTB-XL STTC is an ST/T abnormality label, not a myocardial-ischemia diagnosis. Use the ST/T label signal only."
 
     primary_modality: "ecg"
     primary_dataset: "ptbxl"
@@ -98,7 +98,7 @@ diseases:
     display_name: "ST/T Abnormalities"
     category: "coronary_ischemic"
 
-    status: "supported"
+    status: "research_only"
 
     primary_modality: "ecg"
     primary_dataset: "ptbxl"
@@ -118,7 +118,7 @@ diseases:
     display_name: "Atrial Fibrillation"
     category: "electrical_arrhythmic"
 
-    status: "supported"
+    status: "research_only"
 
     primary_modality: "ecg"
     primary_dataset: "ptbxl"
@@ -157,10 +157,10 @@ diseases:
 
 
   bradyarrhythmia:
-    display_name: "Bradyarrhythmia"
+    display_name: "Sinus Bradycardia ECG Label Signal"
     category: "electrical_arrhythmic"
 
-    status: "supported"
+    status: "research_only"
 
     primary_modality: "ecg"
     primary_dataset: "ptbxl"
@@ -176,7 +176,7 @@ diseases:
     display_name: "Atrioventricular Block"
     category: "electrical_arrhythmic"
 
-    status: "supported"
+    status: "research_only"
 
     primary_modality: "ecg"
     primary_dataset: "ptbxl"
@@ -199,7 +199,7 @@ diseases:
     display_name: "Left / Right Bundle Branch Block"
     category: "electrical_arrhythmic"
 
-    status: "supported"
+    status: "research_only"
 
     primary_modality: "ecg"
     primary_dataset: "ptbxl"
@@ -220,7 +220,7 @@ diseases:
     display_name: "Other Conduction Abnormalities"
     category: "electrical_arrhythmic"
 
-    status: "supported"
+    status: "research_only"
 
     primary_modality: "ecg"
     primary_dataset: "ptbxl"
@@ -242,10 +242,10 @@ diseases:
 # ============================================================
 
   lvh_rvh:
-    display_name: "Left / Right Ventricular Hypertrophy"
+    display_name: "ECG Hypertrophy Label Signal"
     category: "structural_functional"
 
-    status: "supported_weaker"
+    status: "research_only"
 
     primary_modality: "ecg"
     primary_dataset: "ptbxl"
@@ -262,10 +262,10 @@ diseases:
 
 
   lv_dysfunction:
-    display_name: "Left Ventricular Dysfunction"
+    display_name: "Reduced EF Flag (< 50%)"
     category: "structural_functional"
 
-    status: "supported"
+    status: "research_only"
 
     primary_modality: "echo"
     primary_dataset: "echonet"
@@ -273,7 +273,7 @@ diseases:
     primary_output:
       type: "derived_from_ef"
       threshold_ef: 50.0
-      rule: "EF < 50%"
+      rule: "EF < 50% (threshold flag only; not a diagnosis)"
 
     confirmatory_modalities: []
 
@@ -282,10 +282,10 @@ diseases:
 
 
   reduced_lvef:
-    display_name: "Reduced Left Ventricular Ejection Fraction"
+    display_name: "Left Ventricular Ejection Fraction"
     category: "structural_functional"
 
-    status: "supported"
+    status: "research_only"
 
     primary_modality: "echo"
     primary_dataset: "echonet"
@@ -306,10 +306,10 @@ diseases:
 # ============================================================
 
   reduced_ef_cardiomyopathy:
-    display_name: "Reduced-EF Cardiomyopathy"
+    display_name: "Reduced EF Flag (< 40%)"
     category: "cardiomyopathy_heart_failure"
 
-    status: "supported"
+    status: "research_only"
 
     primary_modality: "echo"
     primary_dataset: "echonet"
@@ -317,16 +317,17 @@ diseases:
     primary_output:
       type: "derived_from_ef"
       threshold_ef: 40.0
-      rule: "EF < 40%"
+      rule: "EF < 40% (threshold flag only; not a cardiomyopathy diagnosis)"
 
     confirmatory_modalities: []
 
 
   hfref:
-    display_name: "HFrEF / Reduced LV Function"
+    display_name: "HFrEF"
     category: "cardiomyopathy_heart_failure"
 
-    status: "supported"
+    status: "unsupported"
+    reason: "HFrEF requires a clinical heart-failure syndrome and supporting assessment; EF alone cannot establish HFrEF. The EF measurement and threshold flags are reported separately."
 
     primary_modality: "echo"
     primary_dataset: "echonet"
@@ -352,10 +353,10 @@ diseases:
 
 
   hf_mortality:
-    display_name: "Heart Failure Prognosis / Mortality"
+    display_name: "Death Event in UCI Heart Failure Cohort"
     category: "cardiomyopathy_heart_failure"
 
-    status: "supported"
+    status: "research_only"
 
     primary_modality: "biomarkers"
     primary_dataset: "uci_heart_failure"
@@ -372,6 +373,7 @@ diseases:
     notes:
       - "UCI Heart Failure represents mortality in patients with diagnosed heart failure."
       - "The follow-up time variable must not be used as a predictor."
+      - "This binary classifier ignores event timing and censoring and is not an absolute mortality-risk model."
 
 
 # ============================================================
@@ -382,7 +384,8 @@ diseases:
     display_name: "Cardiogenic Shock"
     category: "post_mi_complications"
 
-    status: "supported"
+    status: "unsupported"
+    reason: "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
 
     primary_modality: "biomarkers"
     primary_dataset: "mi_complications"
@@ -404,7 +407,8 @@ diseases:
     display_name: "Acute LV Failure / Pulmonary Edema"
     category: "post_mi_complications"
 
-    status: "supported"
+    status: "unsupported"
+    reason: "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
 
     primary_modality: "biomarkers"
     primary_dataset: "mi_complications"
@@ -423,7 +427,8 @@ diseases:
     display_name: "Recurrent Myocardial Infarction"
     category: "post_mi_complications"
 
-    status: "supported"
+    status: "unsupported"
+    reason: "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
 
     primary_modality: "biomarkers"
     primary_dataset: "mi_complications"
@@ -439,7 +444,8 @@ diseases:
     display_name: "Post-MI Arrhythmias"
     category: "post_mi_complications"
 
-    status: "supported"
+    status: "unsupported"
+    reason: "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
 
     primary_modality: "biomarkers"
     primary_dataset: "mi_complications"
@@ -471,7 +477,8 @@ diseases:
     display_name: "Post-MI Mortality Cause"
     category: "post_mi_complications"
 
-    status: "supported"
+    status: "unsupported"
+    reason: "LET_IS is a cause-of-death multiclass endpoint in an already hospitalized post-MI cohort; no compatible multiclass inference model is connected."
 
     primary_modality: "biomarkers"
     primary_dataset: "mi_complications"
@@ -489,7 +496,8 @@ diseases:
     display_name: "Myocardial Rupture"
     category: "post_mi_complications"
 
-    status: "supported"
+    status: "unsupported"
+    reason: "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
 
     primary_modality: "biomarkers"
     primary_dataset: "mi_complications"
@@ -505,7 +513,8 @@ diseases:
     display_name: "Dressler Syndrome"
     category: "post_mi_complications"
 
-    status: "supported"
+    status: "unsupported"
+    reason: "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
 
     primary_modality: "biomarkers"
     primary_dataset: "mi_complications"
@@ -521,7 +530,8 @@ diseases:
     display_name: "Chronic Heart Failure After MI"
     category: "post_mi_complications"
 
-    status: "supported"
+    status: "unsupported"
+    reason: "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
 
     primary_modality: "biomarkers"
     primary_dataset: "mi_complications"
@@ -537,7 +547,8 @@ diseases:
     display_name: "Post-Infarction Angina"
     category: "post_mi_complications"
 
-    status: "supported"
+    status: "unsupported"
+    reason: "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
 
     primary_modality: "biomarkers"
     primary_dataset: "mi_complications"
@@ -557,7 +568,7 @@ diseases:
     display_name: "10-Year CHD Risk"
     category: "cardiovascular_risk"
 
-    status: "supported_with_ceiling"
+    status: "research_only"
 
     primary_modality: "biomarkers"
     primary_dataset: "framingham"
@@ -565,17 +576,12 @@ diseases:
 
     confirmatory_modalities: []
 
-    expected_auc_ceiling: 0.70
-
-    confidence:
-      max_level: "MODERATE"
-
     threshold:
       positive_probability: 0.50
 
     notes:
       - "Do not present this as near-perfect classification."
-      - "The project design specifies a visible performance ceiling."
+      - "Report discrimination, calibration, and uncertainty from held-out evaluation; do not infer performance from this registry."
 
 
 # ============================================================
@@ -618,11 +624,11 @@ global_rules:
 
   confirmatory_agreement:
     keep_primary_probability: true
-    upgrade_confidence: true
+    upgrade_confidence: false
 
   confirmatory_disagreement:
     keep_primary_probability: true
-    cap_confidence: "MODERATE"
+    confidence: "LOW"
     show_both_evidences: true
     do_not_average: true
 

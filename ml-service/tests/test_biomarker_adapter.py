@@ -1,5 +1,6 @@
 from src.extraction.schemas import DocumentExtraction, ExtractedTest
 from src.normalization.biomarker_adapter import select_biomarker_input
+from src.preprocessing.biomarkers.leakage_guard import make_training_features
 
 
 def test_zheen_report_maps_to_exact_feature_order():
@@ -29,3 +30,17 @@ def test_incomplete_biomarker_report_never_fabricates_missing_values():
     assert result is not None
     assert result.values.size == 0
     assert "age" in result.missing_features
+
+
+def test_uci_training_features_remove_target_and_follow_up_time():
+    import pandas as pd
+
+    source = pd.DataFrame({
+        "age": [60.0, 72.0],
+        "serum_creatinine": [1.0, 2.1],
+        "time": [120, 8],
+        "DEATH_EVENT": [0, 1],
+    })
+    features = make_training_features(source, dataset_name="uci_heart_failure")
+
+    assert features.columns.tolist() == ["age", "serum_creatinine"]

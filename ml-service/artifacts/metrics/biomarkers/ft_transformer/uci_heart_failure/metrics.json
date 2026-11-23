@@ -1,0 +1,35 @@
+{
+  "source": "uci_heart_failure",
+  "best_epoch": 4,
+  "best_validation_loss": 0.7886110544204712,
+  "split_info": {
+    "stratified": true,
+    "stratification_target": "hf_mortality"
+  },
+  "target_specs": {
+    "hf_mortality": {
+      "type": "binary"
+    }
+  },
+  "validation_metrics": {
+    "hf_mortality": {
+      "status": "computed",
+      "n": 45,
+      "auroc": 0.768888888888889,
+      "auprc": 0.6736087375148262,
+      "brier": 0.19977142414128446,
+      "f1_at_0_5": 0.5625
+    }
+  },
+  "test_metrics": {
+    "hf_mortality": {
+      "status": "computed",
+      "n": 45,
+      "auroc": 0.631336405529954,
+      "auprc": 0.5181246711917709,
+      "brier": 0.23502578292730517,
+      "f1_at_0_5": 0.4
+    }
+  },
+  "checkpoint": "D:\\Programming\\VS Code\\Projects\\CardioFusion-XAI\\ml-service\\checkpoints\\biomarkers\\uci_heart_failure\\biomarker_ft_transformer.pt"
+}

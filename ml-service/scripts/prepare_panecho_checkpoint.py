@@ -6,7 +6,7 @@ which inference never needs. This script:
   1. accepts ``panecho.pt`` *or* the ``panecho.pt.zip`` you downloaded,
   2. keeps only the model weights (~170 MB),
   3. verifies they load into the project's PanEcho implementation,
-  4. writes ``checkpoints/echo/panecho/panecho.pt``.
+  4. writes ``checkpoints/echo/panecho/pretrained/v1/model.pt``.
 
 Run from ml-service/:
 
@@ -33,7 +33,7 @@ from src.models.echo.panecho import (  # noqa: E402
 )
 
 OFFICIAL_URL = "https://github.com/CarDS-Yale/PanEcho/releases/download/v1.0/panecho.pt"
-DEFAULT_OUTPUT = ML_SERVICE_ROOT / "checkpoints" / "echo" / "panecho" / "panecho.pt"
+DEFAULT_OUTPUT = ML_SERVICE_ROOT / "checkpoints" / "echo" / "panecho" / "pretrained" / "v1" / "model.pt"
 
 
 def main() -> None:

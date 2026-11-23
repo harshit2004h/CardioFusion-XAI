@@ -1,0 +1,35 @@
+{
+  "source": "zheen",
+  "best_epoch": 54,
+  "best_validation_loss": 0.041521895909681916,
+  "split_info": {
+    "stratified": true,
+    "stratification_target": "acute_mi"
+  },
+  "target_specs": {
+    "acute_mi": {
+      "type": "binary"
+    }
+  },
+  "validation_metrics": {
+    "acute_mi": {
+      "status": "computed",
+      "n": 198,
+      "auroc": 0.9904012079378774,
+      "auprc": 0.9949082407965885,
+      "brier": 0.011852220722562829,
+      "f1_at_0_5": 0.9876543209876543
+    }
+  },
+  "test_metrics": {
+    "acute_mi": {
+      "status": "computed",
+      "n": 198,
+      "auroc": 0.9800364924331867,
+      "auprc": 0.9824300928615951,
+      "brier": 0.03475296534192138,
+      "f1_at_0_5": 0.9661016949152542
+    }
+  },
+  "checkpoint": "D:\\Programming\\VS Code\\Projects\\CardioFusion-XAI\\ml-service\\checkpoints\\biomarkers\\zheen\\biomarker_ft_transformer.pt"
+}

@@ -4,7 +4,7 @@ Works with either source the project already has:
 
 1. The raw EchoNet release: ``data/raw/echo/echonet/FileList.csv`` + ``Videos/*.avi``
    (columns FileName, EF, EDV, ESV, NumberOfFrames, Split).
-2. The project manifest written by ``notebooks/02_preprocessing/echonet.ipynb``:
+2. The project manifest written by ``notebooks/02_preprocessing/03_echonet_dynamic_preprocessing.ipynb``:
    ``data/processed/echo/echonet/echonet_manifest.csv`` (columns video_path, EF, split, ...).
 
 Targets returned per item (NaN when unavailable):

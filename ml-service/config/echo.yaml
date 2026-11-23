@@ -13,7 +13,7 @@ width: 112
 channels: 3
 model:
   name: r2plus1d_18
-  checkpoint: checkpoints/echo/echonet_r2plus1d18.pt
+  checkpoint: checkpoints/echo/echonet/r2plus1d_baseline/v1/model.pt
 target: EF
 
 # ------------------------------------------------------------
@@ -24,8 +24,8 @@ target: EF
 panecho:
   # Loaded in this order (first existing file wins); PANECHO_CHECKPOINT env var overrides.
   checkpoints:
-    finetuned: checkpoints/echo/panecho/panecho_echonet_finetuned.pt
-    pretrained: checkpoints/echo/panecho.pt
+    finetuned: checkpoints/echo/echonet/selected_panecho/v1/model.pt
+    pretrained: checkpoints/echo/panecho/pretrained/v1/model.pt
   input:
     clip_len: 16            # consecutive frames, native frame rate (no stride)
     resize: 256             # every frame resized to 256x256 (INTER_AREA) ...

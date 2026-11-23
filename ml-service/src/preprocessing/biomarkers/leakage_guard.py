@@ -125,8 +125,12 @@ def make_training_features(
         target_columns=set(target_columns),
         forbidden_columns=set(extra_forbidden_columns),
     )
-    guard.validate(df.columns)
-    return guard.remove_forbidden(df)
+    # Input data commonly contains both its outcome and known leakage columns.
+    # This helper constructs X, so remove those columns first and validate the
+    # resulting frame rather than rejecting the source data itself.
+    features = guard.remove_forbidden(df)
+    guard.validate(features.columns)
+    return features
 
 
 def assert_no_leakage(

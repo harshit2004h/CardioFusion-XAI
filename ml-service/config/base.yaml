@@ -81,13 +81,16 @@ paths:
 
   artifacts:
     root: "artifacts"
-    metrics: "artifacts/metrics"
-    plots: "artifacts/plots"
-    roc: "artifacts/roc_curves"
-    pr: "artifacts/pr_curves"
-    confusion_matrix: "artifacts/confusion_matrices"
-    calibration: "artifacts/calibration"
-    xai: "artifacts/xai"
+    eda: "artifacts/01_eda"
+    preprocessing: "artifacts/02_preprocessing"
+    training: "artifacts/03_training"
+    evaluation: "artifacts/04_evaluation"
+    calibration_fusion: "artifacts/05_calibration_fusion"
+    explainability: "artifacts/06_explainability"
+    metrics: "artifacts/04_evaluation"
+    plots: "artifacts/04_evaluation"
+    calibration: "artifacts/05_calibration_fusion"
+    xai: "artifacts/06_explainability"
 
   logs:
     root: "logs"

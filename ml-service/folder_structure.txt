@@ -1,4 +1,10 @@
 ml-service/
+
+NOTE: This is a historical source-tree snapshot. The current canonical notebook
+names, run order, checkpoint paths, and generated-artifact layout are defined
+in NOTEBOOK_WORKFLOW_INDEX.md. In particular, `05_fusion` is now
+`05_calibration_fusion`, `06_xai` is now `06_explainability`, and all active
+models use the versioned `checkpoints/<modality>/<dataset>/<model>/v1/` layout.
 ├── README.md
 ├── requirements.txt
 ├── pyproject.toml

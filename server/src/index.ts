@@ -15,9 +15,17 @@ app.use(clerkMiddleware());
 app.use("/api/profile", profileRouter);
 app.use("/api/reports", reportsRouter);
 
-app.use((error: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((error: Error & { code?: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(error.message);
-  res.status(500).json({ error: "The request could not be completed." });
+  const uploadError = error.name === "MulterError" || error.name === "UploadValidationError";
+  const status = error.name === "MulterError" && error.code === "LIMIT_FILE_SIZE"
+    ? 413
+    : uploadError
+      ? 400
+      : 500;
+  res.status(status).json({
+    error: status < 500 ? error.message : "The request could not be completed.",
+  });
 });
 
 app.listen(config.port, () => console.log(`CardioFusion server listening on http://localhost:${config.port}`));

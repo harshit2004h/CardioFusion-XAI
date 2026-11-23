@@ -4,8 +4,8 @@ datasets:
   - mi_complications
   - framingham
 inference:
-  checkpoint: checkpoints/biomarkers/biomarker_ft_transformer.pt
-  preprocessing_artifacts: checkpoints/biomarkers/preprocessing
+  checkpoint: checkpoints/biomarkers/multisource/ft_transformer/v1/model.pt
+  preprocessing_artifacts: checkpoints/biomarkers/multisource/ft_transformer/v1/preprocessing
   require_fitted_preprocessing: true
 features:
   aliases:

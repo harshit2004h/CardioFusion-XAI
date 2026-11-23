@@ -1,0 +1,11 @@
+{
+  "biomarker_sources_loaded": [
+    "zheen",
+    "framingham",
+    "uci_heart_failure",
+    "mi_complications"
+  ],
+  "ptbxl_manifest_found": true,
+  "echo_manifest_or_filelist": "D:\\Programming\\VS Code\\Projects\\CardioFusion-XAI\\ml-service\\data\\processed\\echo\\echonet\\echonet_panecho_manifest.csv",
+  "dataset_pairing": "independent datasets; no patient-level cross-modal pairing"
+}

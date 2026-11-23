@@ -1,9 +1,13 @@
 [
   {
     "disease": "acute_mi",
-    "display_name": "Acute Myocardial Infarction",
+    "display_name": "Zheen Heart Attack Label Score",
     "risk": null,
     "confidence": "LOW",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "zheen",
+    "support_level": "research_only",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
@@ -15,17 +19,24 @@
     "display_name": "Myocardial Ischemia",
     "risk": null,
     "confidence": "LOW",
-    "status": "primary_missing",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "ptbxl",
+    "support_level": "unsupported",
+    "status": "unsupported",
     "detected_from": [],
-    "recommendations": [
-      "Upload ecg."
-    ]
+    "recommendations": [],
+    "message": "PTB-XL STTC is an ST/T abnormality label, not a myocardial-ischemia diagnosis. Use the ST/T label signal only."
   },
   {
     "disease": "st_t_abnormalities",
     "display_name": "ST/T Abnormalities",
     "risk": null,
     "confidence": "LOW",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "ptbxl",
+    "support_level": "research_only",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
@@ -37,6 +48,10 @@
     "display_name": "Atrial Fibrillation",
     "risk": null,
     "confidence": "LOW",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "ptbxl",
+    "support_level": "research_only",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
@@ -48,6 +63,10 @@
     "display_name": "Ventricular Tachycardia / Ventricular Fibrillation",
     "risk": null,
     "confidence": "LOW",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": null,
+    "support_level": "unsupported",
     "status": "unsupported",
     "detected_from": [],
     "recommendations": [],
@@ -55,9 +74,13 @@
   },
   {
     "disease": "bradyarrhythmia",
-    "display_name": "Bradyarrhythmia",
+    "display_name": "Sinus Bradycardia ECG Label Signal",
     "risk": null,
     "confidence": "LOW",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "ptbxl",
+    "support_level": "research_only",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
@@ -69,6 +92,10 @@
     "display_name": "Atrioventricular Block",
     "risk": null,
     "confidence": "LOW",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "ptbxl",
+    "support_level": "research_only",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
@@ -80,6 +107,10 @@
     "display_name": "Left / Right Bundle Branch Block",
     "risk": null,
     "confidence": "LOW",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "ptbxl",
+    "support_level": "research_only",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
@@ -91,6 +122,10 @@
     "display_name": "Other Conduction Abnormalities",
     "risk": null,
     "confidence": "LOW",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "ptbxl",
+    "support_level": "research_only",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
@@ -99,9 +134,13 @@
   },
   {
     "disease": "lvh_rvh",
-    "display_name": "Left / Right Ventricular Hypertrophy",
+    "display_name": "ECG Hypertrophy Label Signal",
     "risk": null,
     "confidence": "LOW",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "ptbxl",
+    "support_level": "research_only",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
@@ -110,9 +149,13 @@
   },
   {
     "disease": "lv_dysfunction",
-    "display_name": "Left Ventricular Dysfunction",
+    "display_name": "Reduced EF Flag (< 50%)",
     "risk": null,
     "confidence": "LOW",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "echonet",
+    "support_level": "research_only",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
@@ -121,9 +164,13 @@
   },
   {
     "disease": "reduced_lvef",
-    "display_name": "Reduced Left Ventricular Ejection Fraction",
+    "display_name": "Left Ventricular Ejection Fraction",
     "risk": null,
     "confidence": "LOW",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "echonet",
+    "support_level": "research_only",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
@@ -132,9 +179,13 @@
   },
   {
     "disease": "reduced_ef_cardiomyopathy",
-    "display_name": "Reduced-EF Cardiomyopathy",
+    "display_name": "Reduced EF Flag (< 40%)",
     "risk": null,
     "confidence": "LOW",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "echonet",
+    "support_level": "research_only",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
@@ -143,20 +194,27 @@
   },
   {
     "disease": "hfref",
-    "display_name": "HFrEF / Reduced LV Function",
+    "display_name": "HFrEF",
     "risk": null,
     "confidence": "LOW",
-    "status": "primary_missing",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "echonet",
+    "support_level": "unsupported",
+    "status": "unsupported",
     "detected_from": [],
-    "recommendations": [
-      "Upload echo."
-    ]
+    "recommendations": [],
+    "message": "HFrEF requires a clinical heart-failure syndrome and supporting assessment; EF alone cannot establish HFrEF. The EF measurement and threshold flags are reported separately."
   },
   {
     "disease": "hf_mortality",
-    "display_name": "Heart Failure Prognosis / Mortality",
+    "display_name": "Death Event in UCI Heart Failure Cohort",
     "risk": null,
     "confidence": "LOW",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "uci_heart_failure",
+    "support_level": "research_only",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
@@ -168,105 +226,136 @@
     "display_name": "Cardiogenic Shock",
     "risk": null,
     "confidence": "LOW",
-    "status": "primary_missing",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "mi_complications",
+    "support_level": "unsupported",
+    "status": "unsupported",
     "detected_from": [],
-    "recommendations": [
-      "Upload biomarkers."
-    ]
+    "recommendations": [],
+    "message": "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
   },
   {
     "disease": "acute_lv_failure_pulmonary_edema",
     "display_name": "Acute LV Failure / Pulmonary Edema",
     "risk": null,
     "confidence": "LOW",
-    "status": "primary_missing",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "mi_complications",
+    "support_level": "unsupported",
+    "status": "unsupported",
     "detected_from": [],
-    "recommendations": [
-      "Upload biomarkers."
-    ]
+    "recommendations": [],
+    "message": "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
   },
   {
     "disease": "recurrent_mi",
     "display_name": "Recurrent Myocardial Infarction",
     "risk": null,
     "confidence": "LOW",
-    "status": "primary_missing",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "mi_complications",
+    "support_level": "unsupported",
+    "status": "unsupported",
     "detected_from": [],
-    "recommendations": [
-      "Upload biomarkers."
-    ]
+    "recommendations": [],
+    "message": "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
   },
   {
     "disease": "post_mi_arrhythmias",
     "display_name": "Post-MI Arrhythmias",
     "risk": null,
     "confidence": "LOW",
-    "status": "primary_missing",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "mi_complications",
+    "support_level": "unsupported",
+    "status": "unsupported",
     "detected_from": [],
-    "recommendations": [
-      "Upload biomarkers."
-    ]
+    "recommendations": [],
+    "message": "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
   },
   {
     "disease": "post_mi_mortality",
     "display_name": "Post-MI Mortality Cause",
     "risk": null,
     "confidence": "LOW",
-    "status": "primary_missing",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "mi_complications",
+    "support_level": "unsupported",
+    "status": "unsupported",
     "detected_from": [],
-    "recommendations": [
-      "Upload biomarkers."
-    ]
+    "recommendations": [],
+    "message": "LET_IS is a cause-of-death multiclass endpoint in an already hospitalized post-MI cohort; no compatible multiclass inference model is connected."
   },
   {
     "disease": "myocardial_rupture",
     "display_name": "Myocardial Rupture",
     "risk": null,
     "confidence": "LOW",
-    "status": "primary_missing",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "mi_complications",
+    "support_level": "unsupported",
+    "status": "unsupported",
     "detected_from": [],
-    "recommendations": [
-      "Upload biomarkers."
-    ]
+    "recommendations": [],
+    "message": "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
   },
   {
     "disease": "dressler_syndrome",
     "display_name": "Dressler Syndrome",
     "risk": null,
     "confidence": "LOW",
-    "status": "primary_missing",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "mi_complications",
+    "support_level": "unsupported",
+    "status": "unsupported",
     "detected_from": [],
-    "recommendations": [
-      "Upload biomarkers."
-    ]
+    "recommendations": [],
+    "message": "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
   },
   {
     "disease": "chronic_hf_post_mi",
     "display_name": "Chronic Heart Failure After MI",
     "risk": null,
     "confidence": "LOW",
-    "status": "primary_missing",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "mi_complications",
+    "support_level": "unsupported",
+    "status": "unsupported",
     "detected_from": [],
-    "recommendations": [
-      "Upload biomarkers."
-    ]
+    "recommendations": [],
+    "message": "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
   },
   {
     "disease": "post_infarction_angina",
     "display_name": "Post-Infarction Angina",
     "risk": null,
     "confidence": "LOW",
-    "status": "primary_missing",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "mi_complications",
+    "support_level": "unsupported",
+    "status": "unsupported",
     "detected_from": [],
-    "recommendations": [
-      "Upload biomarkers."
-    ]
+    "recommendations": [],
+    "message": "The MI Complications cohort is not connected to an inference input adapter; its research labels cannot be inferred from the uploaded report inputs."
   },
   {
     "disease": "ten_year_chd_risk",
     "display_name": "10-Year CHD Risk",
     "risk": null,
     "confidence": "LOW",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": "framingham",
+    "support_level": "research_only",
     "status": "primary_missing",
     "detected_from": [],
     "recommendations": [
@@ -278,6 +367,10 @@
     "display_name": "Future Heart Failure Risk",
     "risk": null,
     "confidence": "LOW",
+    "confidence_basis": "patient_level_uncertainty_not_estimated",
+    "risk_calibrated": null,
+    "population_scope": null,
+    "support_level": "unsupported",
     "status": "unsupported",
     "detected_from": [],
     "recommendations": [],

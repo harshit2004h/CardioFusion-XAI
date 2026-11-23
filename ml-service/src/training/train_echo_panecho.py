@@ -7,15 +7,14 @@ EF / LVEDV / LVESV heads are trained on EchoNet labels with MSE.
 Run from ml-service/:
 
     python -m src.training.train_echo_panecho \
-        --checkpoint checkpoints/echo/panecho.pt \
+        --checkpoint checkpoints/echo/panecho/pretrained/v1/model.pt \
         --data-root data/raw/echo/echonet \
         --epochs 30 --batch-size 4
 
 Outputs
-  artifacts/echo/panecho/checkpoints/panecho_echonet_stage*.pt (Trainer's best-by-val checkpoints)
-  checkpoints/echo/panecho/panecho_echonet_finetuned.pt         (inference-ready, picked up by the API)
-  artifacts/metrics/echo/panecho/finetuned/{metrics.json,predictions.csv}  (test split, 4-clip averaging)
-  artifacts/echo/panecho/history.json
+  artifacts/03_training/echo/echonet/panecho_finetuning/v1/checkpoints/ (Trainer checkpoints)
+  checkpoints/echo/echonet/panecho_finetuning/v1/model.pt
+  artifacts/04_evaluation/echo/echonet/panecho_finetuning/v1/ (test metrics and predictions)
 
 Tips
   * GPU strongly recommended. batch 4 x 16 frames x 224^2 needs ~10 GB with AMP.
@@ -83,7 +82,7 @@ def set_backbone_trainable(model: nn.Module, trainable: bool) -> None:
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--checkpoint", default="checkpoints/echo/panecho.pt",
+    p.add_argument("--checkpoint", default="checkpoints/echo/panecho/pretrained/v1/model.pt",
                    help="Pretrained PanEcho weights (panecho.pt or panecho.pt.zip)")
     p.add_argument("--no-pretrained", action="store_true",
                    help="Ablation: same architecture from ImageNet ConvNeXt, no PanEcho weights")
@@ -91,8 +90,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--manifest", default=None, help="Project manifest CSV instead of FileList.csv")
     p.add_argument("--targets", default="EF,LVEDV,LVESV",
                    help="Comma list of heads to train: EF, LVEDV, LVESV")
-    p.add_argument("--artifact-dir", default="artifacts/echo/panecho")
-    p.add_argument("--output", default="checkpoints/echo/panecho/panecho_echonet_finetuned.pt")
+    p.add_argument("--artifact-dir", default="artifacts/03_training/echo/echonet/panecho_finetuning/v1")
+    p.add_argument("--output", default="checkpoints/echo/echonet/panecho_finetuning/v1/model.pt")
     p.add_argument("--epochs", type=int, default=30)
     p.add_argument("--batch-size", type=int, default=4)
     p.add_argument("--lr", type=float, default=1e-4)
@@ -244,7 +243,7 @@ def main() -> None:
     )
     predictions = predict_loader(eval_model, test_loaders["test"], device)
     metrics = summarize(predictions)
-    out_dir = Path("artifacts/metrics/echo/panecho/finetuned")
+    out_dir = Path("artifacts/04_evaluation/echo/echonet/panecho_finetuning/v1")
     out_dir.mkdir(parents=True, exist_ok=True)
     predictions.to_csv(out_dir / "predictions.csv", index=False)
     (out_dir / "metrics.json").write_text(json.dumps({"checkpoint": str(output), "split": "test", **metrics}, indent=2), encoding="utf-8")

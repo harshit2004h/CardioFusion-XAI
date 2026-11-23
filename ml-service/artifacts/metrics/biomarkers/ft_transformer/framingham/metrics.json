@@ -1,0 +1,35 @@
+{
+  "source": "framingham",
+  "best_epoch": 5,
+  "best_validation_loss": 1.0477495193481445,
+  "split_info": {
+    "stratified": true,
+    "stratification_target": "ten_year_chd_risk"
+  },
+  "target_specs": {
+    "ten_year_chd_risk": {
+      "type": "binary"
+    }
+  },
+  "validation_metrics": {
+    "ten_year_chd_risk": {
+      "status": "computed",
+      "n": 636,
+      "auroc": 0.7154715681961632,
+      "auprc": 0.3235524250022983,
+      "brier": 0.2181387293906333,
+      "f1_at_0_5": 0.3651685393258427
+    }
+  },
+  "test_metrics": {
+    "ten_year_chd_risk": {
+      "status": "computed",
+      "n": 636,
+      "auroc": 0.6786072530864198,
+      "auprc": 0.2877190245641176,
+      "brier": 0.21704638704897297,
+      "f1_at_0_5": 0.3105590062111801
+    }
+  },
+  "checkpoint": "D:\\Programming\\VS Code\\Projects\\CardioFusion-XAI\\ml-service\\checkpoints\\biomarkers\\framingham\\biomarker_ft_transformer.pt"
+}

@@ -1,0 +1,50 @@
+{
+  "model": "CNN_BiLSTM_Attention",
+  "dataset": "PTB-XL",
+  "preprocessing_version": "100hz_record_zscore",
+  "input_shape": [
+    12,
+    1000
+  ],
+  "diagnostic_targets": [
+    "NORM",
+    "MI",
+    "STTC",
+    "CD",
+    "HYP"
+  ],
+  "rhythm_targets": [
+    "RHYTHM_SR",
+    "RHYTHM_AFIB",
+    "RHYTHM_AFLT",
+    "RHYTHM_STACH",
+    "RHYTHM_SBRAD",
+    "RHYTHM_SARRH",
+    "RHYTHM_PSVT",
+    "RHYTHM_BIGU",
+    "RHYTHM_PACE"
+  ],
+  "best_epoch": 23,
+  "best_validation_score": 0.6615986690603923,
+  "diagnostic_test": {
+    "auroc": 0.9249469175422436,
+    "auprc": 0.8138068066149484,
+    "f1": 0.7452572491726536,
+    "precision": 0.7454481978559269,
+    "recall": 0.74936250192294,
+    "micro_f1": 0.7779538651170981
+  },
+  "rhythm_test": {
+    "auroc": 0.9213267383210714,
+    "auprc": 0.5804540483198848,
+    "f1": 0.5135063660150051,
+    "precision": 0.5235732047869794,
+    "recall": 0.6272781670897205,
+    "micro_f1": 0.8529211184360082
+  },
+  "patient_overlap": {
+    "train_val": 0,
+    "train_test": 0,
+    "val_test": 0
+  }
+}

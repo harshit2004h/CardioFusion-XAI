@@ -1,0 +1,13 @@
+{
+  "rows": 299,
+  "columns": 13,
+  "duplicates": 0,
+  "missing_columns": [],
+  "target_counts": {
+    "0": 203,
+    "1": 96
+  },
+  "time_analyzed_but_excluded_from_predictors": true,
+  "interpretation": "Observed follow-up mortality in a cohort with existing heart failure.",
+  "predictors": "The 11 configured clinical features; exclude time and DEATH_EVENT."
+}

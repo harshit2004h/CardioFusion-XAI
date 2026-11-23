@@ -1,6 +1,6 @@
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
 
 class FileReference(BaseModel):
@@ -8,6 +8,8 @@ class FileReference(BaseModel):
 
     url: HttpUrl
     header_url: HttpUrl | None = None
+    filename: str | None = None
+    header_filename: str | None = None
 
 
 class InferenceRequest(BaseModel):
@@ -16,6 +18,13 @@ class InferenceRequest(BaseModel):
     biomarkers: FileReference | None = None
     ecg: FileReference | None = None
     echo: FileReference | None = None
+    explain: bool = False
+
+    @model_validator(mode="after")
+    def require_at_least_one_modality(self) -> "InferenceRequest":
+        if not any((self.biomarkers, self.ecg, self.echo)):
+            raise ValueError("Provide at least one of biomarkers, ecg, or echo.")
+        return self
 
 
 class ModalityStatus(BaseModel):
@@ -28,6 +37,8 @@ class InferenceResponse(BaseModel):
     request_id: str
     service_version: str
     status: str
+    available_modalities: list[str] = Field(default_factory=list)
+    result_scope: str = "none"
     modalities: dict[str, ModalityStatus]
     extraction: dict[str, Any] = Field(default_factory=dict)
     predictions: dict[str, Any] = Field(default_factory=dict)

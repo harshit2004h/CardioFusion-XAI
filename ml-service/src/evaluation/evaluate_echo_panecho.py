@@ -4,15 +4,15 @@ Examples (run from ml-service/):
 
     # Zero-shot: the published PanEcho EF head, no EchoNet training at all
     python -m src.evaluation.evaluate_echo_panecho \
-        --checkpoint checkpoints/echo/panecho.pt \
+        --checkpoint checkpoints/echo/panecho/pretrained/v1/model.pt \
         --data-root data/raw/echo/echonet --split test --tag zero_shot
 
     # Fine-tuned checkpoint produced by src.training.train_echo_panecho
     python -m src.evaluation.evaluate_echo_panecho \
-        --checkpoint checkpoints/echo/panecho/panecho_echonet_finetuned.pt \
+        --checkpoint checkpoints/echo/echonet/panecho_finetuning/v1/model.pt \
         --data-root data/raw/echo/echonet --split test --tag finetuned
 
-Outputs go to ``artifacts/metrics/echo/panecho/<tag>/``:
+Outputs go to ``artifacts/04_evaluation/echo/echonet/panecho/<tag>/``:
   predictions.csv, metrics.json
 """
 from __future__ import annotations
@@ -88,7 +88,7 @@ def summarize(predictions: pd.DataFrame) -> dict[str, float]:
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--checkpoint", default="checkpoints/echo/panecho.pt")
+    p.add_argument("--checkpoint", default="checkpoints/echo/panecho/pretrained/v1/model.pt")
     p.add_argument("--data-root", default="data/raw/echo/echonet")
     p.add_argument("--manifest", default=None, help="Use the project manifest CSV instead of FileList.csv")
     p.add_argument("--split", default="test", choices=["train", "val", "test"])
@@ -98,7 +98,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--limit", type=int, default=None, help="Evaluate only the first N videos (quick check)")
     p.add_argument("--device", default="auto")
     p.add_argument("--tag", default=None, help="Sub-folder name for outputs")
-    p.add_argument("--output-root", default="artifacts/metrics/echo/panecho")
+    p.add_argument("--output-root", default="artifacts/04_evaluation/echo/echonet/panecho")
     return p.parse_args()
 
 

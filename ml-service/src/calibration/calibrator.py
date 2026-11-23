@@ -114,9 +114,24 @@ class PlattCalibrator:
             probabilities
         ).reshape(-1, 1)
 
-        return self.model.predict_proba(
-            logits
-        )[:, 1]
+        # Use the fitted binary-logistic parameters directly. This is the same
+        # sigmoid probability as sklearn's predict_proba, while keeping saved
+        # calibrators usable across sklearn releases that change estimator APIs.
+        classes = np.asarray(self.model.classes_)
+        coefficients = np.asarray(self.model.coef_, dtype=np.float64)
+        intercept = np.asarray(self.model.intercept_, dtype=np.float64)
+        if not np.array_equal(classes, np.array([0, 1])):
+            raise ValueError("Platt calibration expects fitted classes [0, 1].")
+        if coefficients.shape != (1, 1) or intercept.shape != (1,):
+            raise ValueError("Fitted Platt model must have one binary coefficient and intercept.")
+
+        decision = logits.reshape(-1) * coefficients[0, 0] + intercept[0]
+        probabilities_out = np.empty_like(decision)
+        positive = decision >= 0
+        probabilities_out[positive] = 1.0 / (1.0 + np.exp(-decision[positive]))
+        exp_decision = np.exp(decision[~positive])
+        probabilities_out[~positive] = exp_decision / (1.0 + exp_decision)
+        return probabilities_out
 
     def save(
         self,

@@ -50,6 +50,8 @@ def _format_from_bytes(prefix: bytes, content_type: str, suffix: str) -> str | N
         "application/pdf": "pdf",
         "image/jpeg": "jpg",
         "image/png": "png",
+        "text/csv": "csv",
+        "application/csv": "csv",
         "video/mp4": "mp4",
         "video/x-msvideo": "avi",
         "application/dicom": "dicom",
@@ -67,6 +69,7 @@ def download_to_temp(
     *,
     timeout: float = 30.0,
     max_bytes: int = 50 * 1024 * 1024,
+    filename: str | None = None,
 ):
     """Stream a signed/public Cloudinary asset into a request-local temp file."""
     _validate_url(url)
@@ -94,7 +97,10 @@ def download_to_temp(
                 raise DownloadError("Downloaded file exceeds the configured size limit.")
             handle.write(chunk)
 
-    detected = _format_from_bytes(first_chunk, response.headers.get("content-type", ""), path.suffix)
+    # The temp file has no source extension. Preserve the browser-uploaded name
+    # (Cloudinary URLs often omit it) and fall back to the URL path for direct API callers.
+    source_suffix = Path(filename or urlparse(url).path).suffix.lower()
+    detected = _format_from_bytes(first_chunk, response.headers.get("content-type", ""), source_suffix)
     if detected not in ALLOWED_FORMATS[modality]:
         try:
             import pydicom

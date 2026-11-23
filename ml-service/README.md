@@ -1,5 +1,13 @@
 # Cardio Fusion XAI — ML Service
 
+## Notebook workflows
+
+The notebook-first research workflow and execution order are documented in
+[`NOTEBOOK_WORKFLOW_INDEX.md`](NOTEBOOK_WORKFLOW_INDEX.md). It includes separate
+comparative experiments and calibration-ready notebooks for the selected
+biomarker, CNN-BiLSTM, and PanEcho models. Existing experiment notebooks are
+preserved; new variants write to their own output paths.
+
 ## Run the FastAPI service
 
 From this directory, install the project dependencies into the project
@@ -15,7 +23,7 @@ The versioned API is:
 - `GET /health` for the legacy liveness check
 - `GET /v1/health` for device and loaded-artifact status
 - `GET /v1/registry` for the configured disease registry
-- `POST /v1/inference` with optional `biomarkers`, `ecg`, and `echo` HTTPS URL references
+- `POST /v1/inference` with optional `biomarkers`, `ecg`, and `echo` HTTPS URL references; set `explain: true` to request per-modality explanations
 
 Supported uploads are blood/serum PDF or JPG/JPEG/PNG, ECG DICOM/DAT/CSV/SCP/EDF,
 and echo AVI/MP4. ECG inputs are normalized to the BiLSTM model shape `(12, 1000)`.
@@ -38,7 +46,7 @@ The service streams Cloudinary assets into request-local temporary files,
 validates their content signatures, and removes them after processing. ECG text
 is never treated as a waveform. Echo uses OpenCV and the checked-in
 R(2+1)D-18 checkpoint when available. Biomarker reports are mapped to the
-validated Zheen, UCI-HF, or Framingham feature order when every required field
+configured Zheen, UCI-HF, or Framingham feature order when every required field
 is present. Incomplete reports return `partial_extraction` with missing fields;
 the service never fills a clinical value with zero or an LLM guess. The
 113-feature MI-Complications source is not reconstructed from ordinary reports.
@@ -156,10 +164,10 @@ Instead, the architecture is:
             v
      Decision-Level Fusion
 
-Each modality has its own independently trained model.
-
-The final system combines calibrated evidence at the decision/orchestration
-layer.
+Each modality has its own independently trained model. Because the cohorts are
+not patient-linked, the service preserves the primary calibrated estimate and
+reports other modalities as supporting evidence. It does not learn or claim a
+patient-level multimodal probability.
 
 ---
 
@@ -167,9 +175,9 @@ layer.
 
 ## 1. Zheen Heart Attack Dataset
 
-Used for:
+Research endpoint:
 
-- Acute Myocardial Infarction / Heart Attack
+- The dataset's binary heart-attack label, not a clinically validated acute-MI diagnosis.
 
 Important features include:
 
@@ -188,9 +196,9 @@ The target is a binary heart-attack outcome.
 
 ## 2. UCI Heart Failure Clinical Records
 
-Used for:
+Research endpoint:
 
-- Heart failure prognosis / mortality
+- Death-event classification in this diagnosed-heart-failure cohort. This is not a general-population or fixed-horizon mortality-risk model.
 
 Important clinical features include:
 
@@ -206,14 +214,16 @@ Important clinical features include:
 - Sex
 - Smoking
 
-The `time` feature is excluded from model training because it represents
-follow-up duration and can introduce target leakage for `DEATH_EVENT`.
+The `time` feature is excluded because it represents follow-up duration.
+`DEATH_EVENT` is observed over differing follow-up periods, so the binary
+classifier does not model event timing or censoring. The small UCI cohort is
+intentionally left uncalibrated by the selected-model workflow.
 
 ---
 
 ## 3. Myocardial Infarction Complications
 
-Used for post-MI complications and outcomes including:
+Used in offline research experiments for post-MI complications and outcomes including:
 
 - Cardiogenic shock
 - Acute LV failure / pulmonary edema
@@ -229,8 +239,9 @@ Important:
 
 This dataset contains patients who already experienced myocardial infarction.
 
-Therefore its complication labels must not be interpreted as general-population
-diagnosis labels.
+Its complication labels must not be interpreted as general-population
+diagnosis labels. This dataset currently has no inference adapter in the API,
+so these outcomes are returned as unsupported by the service.
 
 ---
 
@@ -244,7 +255,7 @@ Target:
 
     TenYearCHD
 
-This is a risk prediction task, not a direct acute disease diagnosis.
+This is a fixed-horizon risk prediction endpoint, not a direct acute disease diagnosis.
 
 The system must preserve the documented limitations of this dataset and must
 not display artificially high-confidence predictions.
@@ -253,9 +264,9 @@ not display artificially high-confidence predictions.
 
 ## 5. PTB-XL
 
-Used for ECG-based detection of:
+Used for ECG-label research signals such as:
 
-- Acute MI-related ECG evidence
+- MI superclass ECG evidence (not a direct acute-MI diagnosis)
 - ST/T abnormalities
 - Atrial fibrillation
 - Bradyarrhythmia
@@ -265,25 +276,21 @@ Used for ECG-based detection of:
 
 PTB-XL contains 12-lead ECG recordings with diagnostic and rhythm annotations.
 
-The ECG branch is designed as a multi-label classification system because a
-single ECG can contain multiple abnormalities.
+The ECG branch is multi-label because one ECG can have multiple annotations.
+These annotations are not all clinical disease diagnoses.
 
 ---
 
 ## 6. EchoNet-Dynamic
 
-Used for:
+Used for continuous ejection-fraction (EF) estimation. EF threshold outputs
+are labeled as measurement flags only; EF alone does not establish
+cardiomyopathy or heart failure. HFrEF is marked unsupported because a clinical
+heart-failure syndrome is required.
 
-- Left ventricular ejection fraction
-- Reduced LVEF
-- LV systolic dysfunction
-- Reduced-EF cardiomyopathy
-- HFrEF / reduced LV function
-
-The main Echo task is continuous LVEF regression.
-
-Derived disease categories are calculated from the predicted EF rather than
-requiring separate independent classifiers.
+The fusion registry consumes EF only. When a matching split-conformal artifact
+exists, the service also reports an EF interval with nominal marginal coverage
+under exchangeability; it is not patient-specific uncertainty.
 
 ---
 
@@ -291,44 +298,20 @@ requiring separate independent classifiers.
 
 ## Blood / Clinical Model
 
-Primary model:
-
-    FT-Transformer
-
-Fallback / baseline:
-
-    Residual MLP
-
-The four clinical datasets have different feature schemas.
-
-Therefore each dataset uses its own input adapter:
-
-    Zheen        → Adapter ┐
-    UCI-HF       → Adapter │
-    MI-Comp      → Adapter ├→ Shared representation → Multi-task heads
-    Framingham   → Adapter ┘
-
-The model uses masked multi-task learning because not every dataset contains
-labels for every disease.
-
-Example:
-
-    Zheen sample
-        → contributes to Acute MI loss
-
-    Framingham sample
-        → contributes to TenYearCHD loss
-
-    MI-Complications sample
-        → contributes to relevant post-MI complication losses
+The calibration-ready workflow selects a separate estimator for each source
+and binary target. The service loads a matching source-specific joblib expert
+when present, then uses the existing FT-Transformer only as a fallback. The
+runtime adapter supports Zheen, UCI heart-failure records, and Framingham. The
+MI-Complications cohort remains offline-only until an inference schema and
+adapter are implemented.
 
 ---
 
 ## ECG Model
 
-Primary architecture:
+Runtime architecture:
 
-    XResNet1D
+    CNN + BiLSTM + Attention
 
 Input:
 
@@ -345,9 +328,9 @@ softmax because multiple findings can coexist on a single ECG.
 
 ## Echo Model
 
-Primary architecture:
+Runtime preference:
 
-    R(2+1)D-18
+    Fine-tuned PanEcho when its checkpoint exists; otherwise the R(2+1)D baseline
 
 Input:
 
@@ -357,12 +340,7 @@ Output:
 
     Continuous LVEF percentage
 
-Derived outputs:
-
-    LV dysfunction
-    Reduced LVEF
-    Reduced-EF cardiomyopathy
-    HFrEF / reduced LV function
+The fusion registry consumes EF only. Other PanEcho heads remain report-only.
 
 ---
 
@@ -378,7 +356,7 @@ Example:
          ↓
     BiomarkerNet
          ↓
-    Disease-specific probabilities
+    A calibrated estimate only when a matching calibration artifact is loaded
          ↓
     Display blood-supported findings
          ↓
@@ -398,7 +376,7 @@ Example:
        ↓
     Disease orchestrator
        ↓
-    Updated confidence/evidence
+    Primary estimate plus separately displayed ECG evidence
 
 ECG-only conditions such as atrial fibrillation or conduction abnormalities
 can also become available at this stage.
@@ -407,13 +385,13 @@ can also become available at this stage.
 
 ## Stage 3 — Blood + ECG + Echo
 
-EchoNet provides:
+Echo provides:
 
     LVEF
-    LV-related evidence
-    HFrEF-related evidence
+    Optional marginal EF interval
 
-The disease engine then performs another inference pass.
+The engine reports EF and configured threshold flags. It does not infer HFrEF
+or another clinical diagnosis from EF alone.
 
 ---
 
@@ -431,44 +409,34 @@ training data exists.
 Instead:
 
 1. Each modality produces its own model output.
-2. The output is calibrated.
+2. A matching holdout calibrator is applied when available; otherwise the output remains a model score.
 3. The disease registry determines which modality is primary.
-4. Confirmatory evidence is checked.
-5. Agreement or disagreement changes the confidence/evidence state.
-6. The displayed probability remains tied to an actual calibrated model.
+4. Confirmatory decisions are compared only when both outputs have matching calibration artifacts.
+5. Agreement never increases confidence, which remains LOW because patient-level uncertainty is not estimated.
+6. If the primary score is uncalibrated or its provenance is unknown, the service returns a model score and no patient-risk percentage.
 7. Missing modalities can produce recommendations.
 
 Example:
 
     Blood:
-        Acute MI = 91%
+        Zheen heart-attack cohort label = 91%
 
     ECG:
         Supporting MI evidence = YES
 
     Final:
-        Acute MI
-        Risk: 91%
-        Confidence: HIGH
-        Evidence: Blood + ECG
-        Status: ECG corroborates blood-based prediction
+        Primary calibrated Zheen cohort-label probability: 91% (only if matching calibration exists)
+        Confidence: LOW
+        Supporting signal: PTB-XL MI superclass label (reported separately)
+        No cross-modal agreement or combined probability is claimed.
 
-If evidence disagrees:
-
-    Blood:
-        Acute MI = 91%
-
-    ECG:
-        No supporting MI changes
-
-The system does not silently average these values.
-
-Instead:
-
-    Blood evidence: 91%
-    ECG evidence: not supportive
-    Confidence: MODERATE
-    Recommendation: clinical correlation / further evaluation
+An uncalibrated primary output is returned as a model score, not a patient-risk
+percentage. The active registry treats PTB-XL MI as a separate ECG label signal
+because it is not the same endpoint as the Zheen heart-attack label.
+The Zheen endpoint and all other active registry endpoints are marked
+`research_only`. A matching calibration artifact describes calibration to that
+cohort label; it does not by itself establish clinical validity or performance
+in a different hospital or patient population.
 
 ---
 
@@ -479,21 +447,30 @@ probability.
 
 Therefore the project contains a calibration layer.
 
-Supported methods include:
-
-- Temperature scaling
-- Platt scaling
+The selected-model notebook fits Platt scaling from reserved calibration
+predictions and reports Brier score, log loss, ECE, and test-set bootstrap
+intervals. Artifacts are accepted only when their SHA-256 matches the exact
+model checkpoint. Under-supported targets remain uncalibrated, and the small
+UCI cohort is always left uncalibrated.
 
 Calibration models are stored under:
 
     checkpoints/calibration/
 
-Confidence is based on validation performance and available corroborating
-evidence rather than an arbitrary probability cutoff alone.
+Calibration is not the same as patient-level confidence. The service does not
+estimate patient-specific uncertainty, so confidence stays LOW and cross-modal
+agreement cannot raise it. A 0.5 threshold is a configured decision rule, not a
+clinical action threshold.
 
 ---
 
 # Explainable AI
+
+The optional `explain: true` request flag runs same-source SHAP for a selected
+biomarker model, Integrated Gradients for the top ECG outputs, and temporal
+occlusion for EF. Explanations are model sensitivity summaries, not causal or
+clinical localization evidence. There is no trained paired-data fusion model,
+so the service does not produce a fusion-level attribution.
 
 ## Blood / Clinical
 
@@ -514,10 +491,10 @@ Example explanation:
 
 Uses:
 
-- Saliency
-- Grad-CAM / gradient-based attribution
+- Integrated Gradients
 
-The system can identify ECG regions/leads that contributed to a prediction.
+When requested, the service returns lead/time sensitivity summaries for the
+top ECG model outputs. These are not clinical localization evidence.
 
 ---
 
@@ -525,8 +502,10 @@ The system can identify ECG regions/leads that contributed to a prediction.
 
 Uses:
 
-- LVEF explanation
-- LV segmentation/visual overlays where available
+- Temporal window occlusion for EF
+
+The current explanation path does not provide LV segmentation or visual
+overlays.
 
 ---
 

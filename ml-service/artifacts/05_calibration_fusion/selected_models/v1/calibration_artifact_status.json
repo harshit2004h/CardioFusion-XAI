@@ -1,0 +1,170 @@
+[
+  {
+    "modality": "biomarker",
+    "target": "acute_mi",
+    "status": "platt",
+    "artifact": "selected_models/v1/biomarkers/zheen/selected_gbdt_stacking/acute_mi.pkl"
+  },
+  {
+    "modality": "biomarker",
+    "target": "hf_mortality",
+    "status": "uncalibrated: small UCI cohort; no Platt artifact is created",
+    "artifact": null
+  },
+  {
+    "modality": "biomarker",
+    "target": "ten_year_chd_risk",
+    "status": "platt",
+    "artifact": "selected_models/v1/biomarkers/framingham/selected_gbdt_stacking/ten_year_chd_risk.pkl"
+  },
+  {
+    "modality": "biomarker",
+    "target": "fibr_preds",
+    "status": "platt",
+    "artifact": "selected_models/v1/biomarkers/mi_complications/selected_gbdt_stacking/fibr_preds.pkl"
+  },
+  {
+    "modality": "biomarker",
+    "target": "preds_tah",
+    "status": "uncalibrated: insufficient class support",
+    "artifact": null
+  },
+  {
+    "modality": "biomarker",
+    "target": "jelud_tah",
+    "status": "uncalibrated: insufficient class support",
+    "artifact": null
+  },
+  {
+    "modality": "biomarker",
+    "target": "fibr_jelud",
+    "status": "platt",
+    "artifact": "selected_models/v1/biomarkers/mi_complications/selected_gbdt_stacking/fibr_jelud.pkl"
+  },
+  {
+    "modality": "biomarker",
+    "target": "a_v_blok",
+    "status": "uncalibrated: insufficient class support",
+    "artifact": null
+  },
+  {
+    "modality": "biomarker",
+    "target": "o_l_post",
+    "status": "platt",
+    "artifact": "selected_models/v1/biomarkers/mi_complications/selected_gbdt_stacking/o_l_post.pkl"
+  },
+  {
+    "modality": "biomarker",
+    "target": "razriv",
+    "status": "uncalibrated: insufficient class support",
+    "artifact": null
+  },
+  {
+    "modality": "biomarker",
+    "target": "dressler",
+    "status": "platt",
+    "artifact": "selected_models/v1/biomarkers/mi_complications/selected_gbdt_stacking/dressler.pkl"
+  },
+  {
+    "modality": "biomarker",
+    "target": "zsn",
+    "status": "platt",
+    "artifact": "selected_models/v1/biomarkers/mi_complications/selected_gbdt_stacking/zsn.pkl"
+  },
+  {
+    "modality": "biomarker",
+    "target": "rec_im",
+    "status": "platt",
+    "artifact": "selected_models/v1/biomarkers/mi_complications/selected_gbdt_stacking/rec_im.pkl"
+  },
+  {
+    "modality": "biomarker",
+    "target": "p_im_sten",
+    "status": "platt",
+    "artifact": "selected_models/v1/biomarkers/mi_complications/selected_gbdt_stacking/p_im_sten.pkl"
+  },
+  {
+    "modality": "ecg",
+    "target": "CD",
+    "status": "platt",
+    "artifact": "selected_models/v1/ecg/ptbxl/selected_cnn_bilstm/CD.pkl"
+  },
+  {
+    "modality": "ecg",
+    "target": "HYP",
+    "status": "platt",
+    "artifact": "selected_models/v1/ecg/ptbxl/selected_cnn_bilstm/HYP.pkl"
+  },
+  {
+    "modality": "ecg",
+    "target": "MI",
+    "status": "platt",
+    "artifact": "selected_models/v1/ecg/ptbxl/selected_cnn_bilstm/MI.pkl"
+  },
+  {
+    "modality": "ecg",
+    "target": "NORM",
+    "status": "platt",
+    "artifact": "selected_models/v1/ecg/ptbxl/selected_cnn_bilstm/NORM.pkl"
+  },
+  {
+    "modality": "ecg",
+    "target": "RHYTHM_AFIB",
+    "status": "platt",
+    "artifact": "selected_models/v1/ecg/ptbxl/selected_cnn_bilstm/RHYTHM_AFIB.pkl"
+  },
+  {
+    "modality": "ecg",
+    "target": "RHYTHM_AFLT",
+    "status": "uncalibrated: insufficient class support",
+    "artifact": null
+  },
+  {
+    "modality": "ecg",
+    "target": "RHYTHM_BIGU",
+    "status": "uncalibrated: insufficient class support",
+    "artifact": null
+  },
+  {
+    "modality": "ecg",
+    "target": "RHYTHM_PACE",
+    "status": "platt",
+    "artifact": "selected_models/v1/ecg/ptbxl/selected_cnn_bilstm/RHYTHM_PACE.pkl"
+  },
+  {
+    "modality": "ecg",
+    "target": "RHYTHM_PSVT",
+    "status": "uncalibrated: insufficient class support",
+    "artifact": null
+  },
+  {
+    "modality": "ecg",
+    "target": "RHYTHM_SARRH",
+    "status": "platt",
+    "artifact": "selected_models/v1/ecg/ptbxl/selected_cnn_bilstm/RHYTHM_SARRH.pkl"
+  },
+  {
+    "modality": "ecg",
+    "target": "RHYTHM_SBRAD",
+    "status": "platt",
+    "artifact": "selected_models/v1/ecg/ptbxl/selected_cnn_bilstm/RHYTHM_SBRAD.pkl"
+  },
+  {
+    "modality": "ecg",
+    "target": "RHYTHM_SR",
+    "status": "platt",
+    "artifact": "selected_models/v1/ecg/ptbxl/selected_cnn_bilstm/RHYTHM_SR.pkl"
+  },
+  {
+    "modality": "ecg",
+    "target": "RHYTHM_STACH",
+    "status": "platt",
+    "artifact": "selected_models/v1/ecg/ptbxl/selected_cnn_bilstm/RHYTHM_STACH.pkl"
+  },
+  {
+    "modality": "ecg",
+    "target": "STTC",
+    "status": "platt",
+    "artifact": "selected_models/v1/ecg/ptbxl/selected_cnn_bilstm/STTC.pkl"
+  }
+]

@@ -1,0 +1,161 @@
+{
+  "seed": 42,
+  "dataset": "PTB-XL",
+  "model": {
+    "name": "cnn_bilstm_attention",
+    "cnn_channels": 128,
+    "lstm_hidden": 128,
+    "lstm_layers": 2,
+    "bidirectional": true,
+    "dropout": 0.3,
+    "cnn_kernel_1": 7,
+    "cnn_kernel_2": 5
+  },
+  "preprocessing_version": "100hz_record_zscore",
+  "preprocessing_config": {
+    "dataset": "PTB-XL",
+    "version_name": "100hz_record_zscore",
+    "random_seed": 42,
+    "source_waveform": "filename_lr",
+    "sampling": {
+      "target_fs_hz": 100,
+      "duration_seconds": 10,
+      "target_length": 1000
+    },
+    "signal": {
+      "num_leads": 12,
+      "lead_names": [
+        "I",
+        "II",
+        "III",
+        "AVR",
+        "AVL",
+        "AVF",
+        "V1",
+        "V2",
+        "V3",
+        "V4",
+        "V5",
+        "V6"
+      ]
+    },
+    "filter": {
+      "enabled": true,
+      "type": "butterworth_highpass",
+      "cutoff_hz": 0.5,
+      "order": 3,
+      "zero_phase": true
+    },
+    "resampling": {
+      "method": "scipy.signal.resample_poly"
+    },
+    "length_policy": {
+      "mode": "strict",
+      "truncate": false,
+      "zero_pad": false
+    },
+    "normalization": {
+      "mode": "train_global_zscore",
+      "epsilon": 1e-08,
+      "statistics_source": "train_only"
+    },
+    "split": {
+      "train_folds": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "validation_folds": [
+        9
+      ],
+      "test_folds": [
+        10
+      ]
+    },
+    "targets": {
+      "diagnostic_labels": [
+        "NORM",
+        "MI",
+        "STTC",
+        "CD",
+        "HYP"
+      ],
+      "rhythm_labels": [
+        "SR",
+        "AFIB",
+        "AFLT",
+        "STACH",
+        "SBRAD",
+        "SARRH",
+        "PSVT",
+        "BIGU",
+        "PACE"
+      ],
+      "multilabel": true
+    },
+    "safety": {
+      "allow_skipped_records": false
+    }
+  },
+  "training": {
+    "batch_size": 32,
+    "epochs": 40,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "gradient_clip_norm": 1.0,
+    "early_stopping_patience": 10,
+    "num_workers": 0,
+    "pin_memory": true,
+    "mixed_precision": true
+  },
+  "augmentation": {
+    "enabled": true,
+    "amplitude": {
+      "enabled": true,
+      "low": 0.95,
+      "high": 1.05
+    },
+    "noise": {
+      "enabled": true,
+      "std": 0.01
+    },
+    "time_shift": {
+      "enabled": true,
+      "fraction": 0.05
+    },
+    "lead_dropout": {
+      "enabled": true,
+      "probability": 0.1
+    }
+  },
+  "diagnostic_targets": [
+    "NORM",
+    "MI",
+    "STTC",
+    "CD",
+    "HYP"
+  ],
+  "rhythm_targets": [
+    "RHYTHM_SR",
+    "RHYTHM_AFIB",
+    "RHYTHM_AFLT",
+    "RHYTHM_STACH",
+    "RHYTHM_SBRAD",
+    "RHYTHM_SARRH",
+    "RHYTHM_PSVT",
+    "RHYTHM_BIGU",
+    "RHYTHM_PACE"
+  ],
+  "signal_length": 1000,
+  "num_leads": 12,
+  "loss": {
+    "type": "BCEWithLogitsLoss",
+    "diagnostic_task_weight": 1.0,
+    "rhythm_task_weight": 1.0
+  }
+}

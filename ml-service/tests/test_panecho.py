@@ -168,7 +168,11 @@ def test_model_manager_prefers_panecho(tmp_path, monkeypatch):
     model_ef = manager.echo_model.predict_clips(clips)["EF"].item()
     if 0 <= model_ef <= 100:
         fusion, auxiliary = manager.predict_echo_panecho(clips)
-        assert set(fusion) == {"EF"} and "RASize" in auxiliary
+        prediction_keys = set(fusion) - {"_metadata", "EF_interval_lower", "EF_interval_upper"}
+        assert prediction_keys == {"EF"}
+        assert fusion["_metadata"]["model"] == manager.echo_model_name
+        assert fusion["_metadata"]["ef_interval"] == "unavailable"
+        assert "RASize" in auxiliary
     with pytest.raises(ValueError):
         manager.predict_echo_panecho(torch.zeros(1, 3, 8, 224, 224))
 

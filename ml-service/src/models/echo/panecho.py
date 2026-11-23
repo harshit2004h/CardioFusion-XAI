@@ -204,6 +204,11 @@ class PanEchoModel(nn.Module):
         """
         if clips.ndim == 4:
             clips = clips.unsqueeze(0)
+        try:
+            model_device = next(self.parameters()).device
+        except StopIteration:
+            model_device = clips.device
+        clips = clips.to(device=model_device)
         was_activated = self.activations
         self.activations = True
         try:
